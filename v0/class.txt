@@ -1,0 +1,7 @@
+902 904 802.11ah-Channel_1
+904 920 802.11ah-Channel_2
+920 928 802.11ah-Channel_3
+2456 2478 802.11b/g/n-Channel_12
+2461 2483 802.11b/g/n-Channel_13
+2473 2495 802.11b/g/n-Channel_14
+2401 2473 802.11b/g/n-Channel_1-11
