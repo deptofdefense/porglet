@@ -96,6 +96,7 @@ class WifiSweeper:
         self.loadDictionary()
         self.setupInterface()
         self.channelList = []
+        self.validChannel = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '36', '38', '40', '42', '44', '46', '48', '52', '54', '56', '58', '60', '62', '64', '100', '102', '104', '106'}
 
     def loadDictionary(self):
         ''' Handles setting up the dictionary that will give the vendor '''
@@ -113,39 +114,6 @@ class WifiSweeper:
         for freq in freqList: # check each frequency
 
             if (int(freq) >= 2401000000) and (int(freq) <= 2495000000): # in the 2.4GHz band
-                '''if (int(freq) >= 2401000000) and (int(freq) <= 2423000000): # channel 1
-                    channelSet.add('1')
-                elif (int(freq) >= 2406000000) and (int(freq) <= 2428000000): # channel 2
-                    channelSet.add('2')
-                elif (int(freq) >= 2411000000) and (int(freq) <= 2433000000): # channel 3
-                    channelSet.add('3')
-                elif (int(freq) >= 2416000000) and (int(freq) <= 2438000000): # channel 4
-                    channelSet.add('4')
-                elif (int(freq) >= 2421000000) and (int(freq) <= 2443000000): # channel 5
-                    channelSet.add('5')
-                elif (int(freq) >= 2426000000) and (int(freq) <= 2448000000): # channel 6
-                    channelSet.add('6')
-                elif (int(freq) >= 2431000000) and (int(freq) <= 2453000000): # channel 7
-                    channelSet.add('7')
-                elif (int(freq) >= 2436000000) and (int(freq) <= 2458000000): # channel 8
-                    channelSet.add('8')
-                elif (int(freq) >= 2441000000) and (int(freq) <= 2463000000): # channel 9
-                    channelSet.add('9')
-                elif (int(freq) >= 2446000000) and (int(freq) <= 2468000000): # channel 10
-                    channelSet.add('10')
-                elif (int(freq) >= 2451000000) and (int(freq) <= 2473000000): # channel 11
-                    channelSet.add('11')
-                elif (int(freq) >= 2456000000) and (int(freq) <= 2478000000): # channel 12
-                    channelSet.add('12')
-                elif (int(freq) >= 2461000000) and (int(freq) <= 2483000000): # channel 13
-                    channelSet.add('13')
-                else: # channel 14
-                    channelSet.add('14')
-            elif (int(freq) >= 5150000000) and (int(freq) <= 5815000000): # in the 5GHz band
-                if (int(freq) >= 5150000000) and (int(freq) <= 5190000000): # channel 36
-                elif (int(freq) >= 5170000000) and (int(freq) <= 5190000000): # channel 36
-                    channelSet.add('36')
-                    channelSet.add('38')'''
                 if abs(int(freq) - 2412000000) <= 11:
                     channelSet.add('1')
                 if abs(int(freq) - 2417000000) <= 11:
@@ -174,11 +142,113 @@ class WifiSweeper:
                     channelSet.add('13')
                 if abs(int(freq) - 2484000000) <= 11:
                     channelSet.add('14')
-
-
+            elif (int(freq) >= 5150000000) and (int(freq) <= 5835000000): # in the 5GHz range
+                if abs(int(freq) - 5160000000) <= 10 and '32' in self.validChannel : 
+                    channelSet.add('32')
+                if abs(int(freq) - 5170000000) <= 20 and '34' in self.validChannel :
+                    channelSet.add('34')
+                if abs(int(freq) - 5180000000) <= 10 and '36' in self.validChannel :
+                    channelSet.add('36')
+                if abs(int(freq) - 5190000000) <= 20 and '38' in self.validChannel :
+                    channelSet.add('38')
+                if abs(int(freq) - 5200000000) <= 10 and '40' in self.validChannel :
+                    channelSet.add('40')
+                if abs(int(freq) - 5210000000) <= 40 and '42' in self.validChannel :
+                    channelSet.add('42')
+                if abs(int(freq) - 5220000000) <= 10 and '44' in self.validChannel :
+                    channelSet.add('44')
+                if abs(int(freq) - 5230000000) <= 20 and '46' in self.validChannel :
+                    channelSet.add('46')
+                if abs(int(freq) - 5240000000) <= 10 and '48' in self.validChannel :
+                    channelSet.add('48')
+                if abs(int(freq) - 5250000000) <= 80 and '50' in self.validChannel :
+                    channelSet.add('50')
+                if abs(int(freq) - 5260000000) <= 10 and '52' in self.validChannel :
+                    channelSet.add('52')
+                if abs(int(freq) - 5270000000) <= 20 and '54' in self.validChannel :
+                    channelSet.add('54')
+                if abs(int(freq) - 5280000000) <= 10 and '56' in self.validChannel :
+                    channelSet.add('56')
+                if abs(int(freq) - 5290000000) <= 40 and '58' in self.validChannel :
+                    channelSet.add('58')
+                if abs(int(freq) - 5300000000) <= 10 and '60' in self.validChannel :
+                    channelSet.add('60')
+                if abs(int(freq) - 5310000000) <= 20 and '62' in self.validChannel :
+                    channelSet.add('62')
+                if abs(int(freq) - 5320000000) <= 10 and '64' in self.validChannel :
+                    channelSet.add('64')
+                if abs(int(freq) - 5340000000) <= 10 and '68' in self.validChannel :
+                    channelSet.add('68')
+                if abs(int(freq) - 5480000000) <= 10 and '96' in self.validChannel :
+                    channelSet.add('96')
+                if abs(int(freq) - 5500000000) <= 10 and '100' in self.validChannel :
+                    channelSet.add('100')
+                if abs(int(freq) - 5510000000) <= 20 and '102' in self.validChannel :
+                    channelSet.add('102')
+                if abs(int(freq) - 5520000000) <= 10 and '104' in self.validChannel :
+                    channelSet.add('104')
+                if abs(int(freq) - 5530000000) <= 40 and '106' in self.validChannel :
+                    channelSet.add('106')
+                if abs(int(freq) - 5540000000) <= 10 and '108' in self.validChannel :
+                    channelSet.add('108')
+                if abs(int(freq) - 5550000000) <= 20 and '110' in self.validChannel :
+                    channelSet.add('110')
+                if abs(int(freq) - 5560000000) <= 10 and '112' in self.validChannel :
+                    channelSet.add('112')
+                if abs(int(freq) - 5570000000) <= 80 and '114' in self.validChannel :
+                    channelSet.add('114')
+                if abs(int(freq) - 5580000000) <= 10 and '116' in self.validChannel :
+                    channelSet.add('116')
+                if abs(int(freq) - 5590000000) <= 20 and '118' in self.validChannel :
+                    channelSet.add('118')
+                if abs(int(freq) - 5600000000) <= 10 and '120' in self.validChannel :
+                    channelSet.add('120')
+                if abs(int(freq) - 5610000000) <= 40 and '122' in self.validChannel :
+                    channelSet.add('122')
+                if abs(int(freq) - 5620000000) <= 10 and '124' in self.validChannel :
+                    channelSet.add('124')
+                if abs(int(freq) - 5630000000) <= 20 and '126' in self.validChannel :
+                    channelSet.add('126')
+                if abs(int(freq) - 5640000000) <= 10 and '128' in self.validChannel :
+                    channelSet.add('128')
+                if abs(int(freq) - 5660000000) <= 10 and '132' in self.validChannel :
+                    channelSet.add('132')
+                if abs(int(freq) - 5670000000) <= 20 and '134' in self.validChannel :
+                    channelSet.add('134')
+                if abs(int(freq) - 5680000000) <= 10 and '136' in self.validChannel :
+                    channelSet.add('136')
+                if abs(int(freq) - 5690000000) <= 40 and '138' in self.validChannel :
+                    channelSet.add('138')
+                if abs(int(freq) - 5700000000) <= 10 and '140' in self.validChannel :
+                    channelSet.add('140')
+                if abs(int(freq) - 5710000000) <= 20 and '142' in self.validChannel :
+                    channelSet.add('142')
+                if abs(int(freq) - 5720000000) <= 10 and '144' in self.validChannel :
+                    channelSet.add('144')
+                if abs(int(freq) - 5745000000) <= 10 and '149' in self.validChannel :
+                    channelSet.add('149')
+                if abs(int(freq) - 5755000000) <= 20 and '151' in self.validChannel :
+                    channelSet.add('151')
+                if abs(int(freq) - 5765000000) <= 10 and '153' in self.validChannel :
+                    channelSet.add('153')
+                if abs(int(freq) - 5775000000) <= 40 and '155' in self.validChannel :
+                    channelSet.add('155')
+                if abs(int(freq) - 5785000000) <= 10 and '157' in self.validChannel :
+                    channelSet.add('157')
+                if abs(int(freq) - 5795000000) <= 20 and '159' in self.validChannel :
+                    channelSet.add('159')
+                if abs(int(freq) - 5805000000) <= 10 and '161' in self.validChannel :
+                    channelSet.add('161')
+                if abs(int(freq) - 5825000000) <= 10 and '165' in self.validChannel :
+                    channelSet.add('165')
+                if abs(int(freq) - 5845000000) <= 10 and '169' in self.validChannel :
+                    channelSet.add('169')
+                if abs(int(freq) - 5865000000) <= 10 and '173' in self.validChannel :
+                    channelSet.add('173')
+                
         self.channelList = list(channelSet)
 
-        print(self.channelList)
+        #print(self.channelList)
 
     def callback(self, packet):
         ''' method to parse out the packet data and add it to the target list '''
@@ -220,39 +290,51 @@ class WifiSweeper:
         while True:
 
             # Prunes the list
-            for target in self.targetList :
-                if target.updateTimeout(self.ch):
-                    self.targetList.remove(target)
+            #for target in self.targetList :
+            #    if target.updateTimeout(self.ch):
+            #        self.targetList.remove(target)
 
-            # sets the new channel
-            for channel in self.channelList:
-                self.ch = channel
+            # sets the new channels and clears the list
+            currentChannels = self.channelList
+            self.channelList = []
 
-                os.system(f"iwconfig {self.interface} channel {self.ch}")
+            #print(currentChannels)
+            #print(self.channelList)
 
-                time.sleep(0.1) # scanning time
-            time.sleep(0.1) # scanning time
+            if len(currentChannels) < 1:
+                #print('X')
+                time.sleep(0.001) # wait time
+            else:
+                #print(f"\n{currentChannels}")
+                for channel in currentChannels:
+                    self.ch = channel
 
+                    #print(self.ch)
+
+                    os.system(f"iwconfig {self.interface} channel {self.ch}")
+
+                    time.sleep(0.4) # scanning time
+            
 
     def printTarget(self):
         ''' prints out the currently tracked targets to the screen \n needs to be a separate thread'''
 
+        # initialize the networks dataframe that will contain all access points nearby 
+        #pandas.set_option('display.max_rows', None)
+        networks = pandas.DataFrame(columns=["BSSID", "SSID", "Vendor", "dBm_Signal", "Channel", "Crypto"])
+        # set the index BSSID (MAC address of the AP)
+        networks.set_index("BSSID", inplace=True)
+
         while True:
 
             os.system("clear")
-
-            # initialize the networks dataframe that will contain all access points nearby 
-            pandas.set_option('display.max_rows', None)
-            networks = pandas.DataFrame(columns=["BSSID", "SSID", "Vendor", "dBm_Signal", "Channel", "Crypto"])
-            # set the index BSSID (MAC address of the AP)
-            networks.set_index("BSSID", inplace=True)
 
             for target in self.targetList: 
 
                 networks.loc[target.bssid] = (target.ssid, target.vendor, target.dBm, target.ch, target.crypto)
 
             print(networks)
-            print(f"Total length: {len(self.targetList)}")
+            print(f"Total length: {len(self.targetList)}\n")
 
             time.sleep(1)
 

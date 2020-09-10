@@ -55,50 +55,52 @@ class WideSweeper:
 
 
         while True:
-            try:
-                splitStr = self.bigSweep.stdout.readline().split(", ")
+            #try:
+            splitStr = self.bigSweep.stdout.readline().split(", ")
 
-                if len(splitStr) >= 11: # reading a data string
+            if len(splitStr) >= 11: # reading a data string
 
-                    tempFloor = tempFloor + float(splitStr[6]) + float(splitStr[7]) + float(splitStr[8]) + float(splitStr[9]) + float(splitStr[10])
-                    counter = counter + 5
+                tempFloor = tempFloor + float(splitStr[6]) + float(splitStr[7]) + float(splitStr[8]) + float(splitStr[9]) + float(splitStr[10])
+                counter = counter + 5
 
-                    if splitStr[2] == startFreq: # check if a loop has finished
+                if splitStr[2] == startFreq: # check if a loop has finished
 
-                        self.noiseFloor = tempFloor / counter
-                        self.updateFreqList(tempFreq)
-                        
-                        # Reset temp variables
-                        counter = float(0)
-                        tempFloor = float(0)
-                        tempFreq = []
-
-                        # display info for debugging
-                        localTime = time.asctime(time.localtime(time.time()))
-                        #print("\nLoop completed at: " + localTime)
-                        #print("New noise floor: " + str(self.noiseFloor))
-                        #print(f"Total Targets: {len(self.freqList)}")
-
-                        
-                    if float(splitStr[6]) > self.noiseFloor: # First freqency is worth checking out
-                        tempFreq.append(int(splitStr[2]) + (0 * round(float(splitStr[4]))))
-                    if float(splitStr[7]) > self.noiseFloor: # Second freqency is worth checking out
-                        tempFreq.append(int(splitStr[2]) + (1 * round(float(splitStr[4]))))
-                    if float(splitStr[8]) > self.noiseFloor: # Third freqency is worth checking out
-                        tempFreq.append(int(splitStr[2]) + (2 * round(float(splitStr[4]))))
-                    if float(splitStr[9]) > self.noiseFloor: # Fourth freqency is worth checking out
-                        tempFreq.append(int(splitStr[2]) + (3 * round(float(splitStr[4]))))
-                    if float(splitStr[10]) > self.noiseFloor: # Fifth freqency is worth checking out
-                        tempFreq.append(int(splitStr[2]) + (4 * round(float(splitStr[4]))))                    
+                    self.noiseFloor = tempFloor / counter
+                    self.updateFreqList(tempFreq)
                     
-                    
-                    
-                else:
-                    print("Something went wrong with spliting bigSweep response")
+                    # Reset temp variables
+                    counter = float(0)
+                    tempFloor = float(0)
+                    tempFreq = []
 
-            except(KeyboardInterrupt, SystemExit):
+                    # display info for debugging
+                    localTime = time.asctime(time.localtime(time.time()))
+                    #print("\nLoop completed at: " + localTime)
+                    #print("New noise floor: " + str(self.noiseFloor))
+                    #print(f"Total Targets: {len(self.freqList)}")
+
+                    
+                if float(splitStr[6]) > self.noiseFloor: # First freqency is worth checking out
+                    tempFreq.append(int(splitStr[2]) + (0 * round(float(splitStr[4]))))
+                if float(splitStr[7]) > self.noiseFloor: # Second freqency is worth checking out
+                    tempFreq.append(int(splitStr[2]) + (1 * round(float(splitStr[4]))))
+                if float(splitStr[8]) > self.noiseFloor: # Third freqency is worth checking out
+                    tempFreq.append(int(splitStr[2]) + (2 * round(float(splitStr[4]))))
+                if float(splitStr[9]) > self.noiseFloor: # Fourth freqency is worth checking out
+                    tempFreq.append(int(splitStr[2]) + (3 * round(float(splitStr[4]))))
+                if float(splitStr[10]) > self.noiseFloor: # Fifth freqency is worth checking out
+                    tempFreq.append(int(splitStr[2]) + (4 * round(float(splitStr[4]))))                    
+                
+                
+                
+            else:
+                print("Something went wrong with spliting bigSweep response")
                 self.bigSweep.kill()
-                raise
+                sys.exit()
+
+            #except(KeyboardInterrupt, SystemExit):
+                #self.bigSweep.kill()
+                #raise
         
     def startSweeper(self):
         ''' spawns all the sweeper threads'''

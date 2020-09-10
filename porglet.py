@@ -37,7 +37,7 @@ if __name__ == "__main__":
     check_root()
 
     # defaults
-    interface = "wlx9cefd5fd14f7"
+    interface = "wlx9cefd5fcd434"
 
     # looks for custom arguments
     if len(sys.argv) > 1 :
