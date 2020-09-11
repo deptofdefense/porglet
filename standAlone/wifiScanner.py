@@ -1,63 +1,250 @@
-from scapy.all import *
-from threading import Thread
-import pandas
-import time
-import os
+from scapy.all import * # needed for reading the packets
+from threading import Thread # needed for multithreading
+import pandas # used for pretty print to screen
+import time # needed for sleep
+import os # needed to run commands
 
-# interface name, check using iwconfig
-interface = "wlx9cefd5fd14f7"
+import csv # needed for manufacturer lookup
 
-# initialize the networks dataframe that will contain all access points nearby
-networks = pandas.DataFrame(columns=["BSSID", "SSID", "dBm_Signal", "Channel", "Crypto"])
-# set the index BSSID (MAC address of the AP)
-networks.set_index("BSSID", inplace=True)
+# Note, must run as root for wifi stuff
 
-def callback(packet):
-    if packet.haslayer(Dot11Beacon):
-        # extract the MAC address of the network
-        bssid = packet[Dot11].addr2
-        # get the name of it
-        ssid = packet[Dot11Elt].info.decode()
+class WifiTarget:
+    ''' Class that handles the wifi targets found by the sweeper '''
+
+    def __init__(self, bssid, ssid, dBm, ch, crypto):
+        ''' init method '''
+
+        self.maxTimeout = 3
+
+        self.bssid = bssid
+        self.ssid = ssid
+        self.dBm = dBm
+        self.ch = ch
+        self.crypto = crypto
+        self.timeOut = self.maxTimeout
+
+        # Key used for vendor lookup
+        self.key = str(self.bssid).replace(':','').upper()[0:6]
+        self.vendor = "Unknown"
+
+    def setVendor(self, vendor):
+        ''' Updates the vendor '''
+
+        self.vendor = vendor
+
+    def updateTimeout(self, ch):
+        ''' updates the timeout of the target object, \n ch: the channel currently being scanned \n Return True when timeout hits zero '''
+
+        # if the channel being scanned is the channel the target should be on
+        if ch == self.ch :
+            self.timeOut = self.timeOut - 1
+            
+            # if the timout has been reduced to zero
+            if self.timeOut <= 0 : 
+                return True
+            else: 
+                return False
+        else:
+            return False
+
+    def matchTarget(self, other):
+        ''' Comapares the BSSID of two objects to see if they match '''
+
+        if self.bssid == other.bssid : 
+            
+            self.ch = other.ch
+            self.crypto = other.crypto
+            self.ssid = other.ssid
+            self.dBm = other.dBm
+
+            self.timeOut = self.maxTimeout
+
+            return True
+
+        else:
+            return False
+
+class WifiScanner:
+    ''' Class that handles independently searching wifi frequencies for wifi networks '''
+
+    def setupInterface(self):
+        ''' Puts the interface into monitor mode '''
+
+        print(f"Placing {self.interface} into monitor mode")
+        os.system('ifconfig ' + self.interface + ' down')
         try:
-            dbm_signal = packet.dBm_AntSignal
+            os.system('iwconfig ' + self.interface + ' mode monitor')
         except:
-            dbm_signal = "N/A"
-        # extract network stats
-        stats = packet[Dot11Beacon].network_stats()
-        # get the channel of the AP
-        channel = stats.get("channel")
-        # get the crypto
-        crypto = stats.get("crypto")
-        networks.loc[bssid] = (ssid, dbm_signal, channel, crypto)
+            print("Failed to setup monitor mode")
+            return False
 
-def print_all():
-    while True:
-        os.system("clear")
-        print(networks)
-        time.sleep(1)
+        os.system('ifconfig ' + self.interface + ' up')
+        
+        return True
+
+    def __init__(self, interface):
+        ''' init method '''
+
+        self.interface = str(interface)
+        self.ch = 1
+        self.targetList = []
+        self.loadDictionary()
+        self.setupInterface()
+        self.validChannel = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '36', '38', '40', '42', '44', '46', '48', '52', '54', '56', '58', '60', '62', '64', '100', '102', '104', '106'}
+
+    def loadDictionary(self):
+        ''' Handles setting up the dictionary that will give the vendor identification'''
+
+        with open('oui.csv', mode='r') as infile: # large registry
+            reader = csv.reader(infile)
+
+            self.vendorDict = {rows[1]:rows[2] for rows in reader}
+
+            #print(f"{len(self.vendorDict)}")
+
+        with open('mam.csv', mode='r') as infile: # medium registry
+            reader = csv.reader(infile)
+
+            midDict = {rows[1]:rows[2] for rows in reader}
+
+            self.vendorDict.update(midDict)
+
+            #print(f"{len(self.vendorDict)}")
+
+        with open('oui36.csv', mode='r') as infile: # small registry
+            reader = csv.reader(infile)
+
+            smallDict = {rows[1]:rows[2] for rows in reader}
+
+            self.vendorDict.update(smallDict)
+
+            #print(f"{len(self.vendorDict)}")
+
+    def callback(self, packet):
+        ''' method to parse out the packet data and add it to the target list '''
+        if packet.haslayer(Dot11Beacon): # else do nothing
+            # extract the MAC address of the network
+            bssid = packet[Dot11].addr2
+            # get the name of it
+            ssid = packet[Dot11Elt].info.decode()
+            try:
+                dbm_signal = packet.dBm_AntSignal
+            except:
+                dbm_signal = "N/A"
+            # extract network stats
+            stats = packet[Dot11Beacon].network_stats()
+            # get the channel of the AP
+            channel = stats.get("channel")
+            # get the crypto
+            crypto = stats.get("crypto")
+            
+            newTarget = WifiTarget(bssid, ssid, dbm_signal, channel, crypto)
+
+            newTarget.setVendor(self.vendorDict.get(newTarget.key))
+
+            matched = False
+            for target in self.targetList: 
+                
+                if target.matchTarget(newTarget) : 
+                    matched = True
+                    break # found match, exit loop
+
+            if not matched : 
+
+                self.targetList.append(newTarget)
 
 
-def change_channel():
-    ch = 1
-    while True:
-        os.system(f"iwconfig {interface} channel {ch}")
-        # switch channel from 1 to 14 each 0.5s
-        ch = ch % 14 + 1
-        time.sleep(0.25)
+    def loop_channels(self):
+        ''' loops through the possible wifi channels \n needs to be a separate thread'''
 
+        while True:
 
+            for channel in self.validChannel:
+                self.ch = channel
+
+                #print(self.ch)
+
+                os.system(f"iwconfig {self.interface} channel {self.ch}")
+
+                time.sleep(0.2) # scanning time
+                
+            
+
+    def printTarget(self):
+        ''' prints out the currently tracked targets to the screen \n needs to be a separate thread'''
+
+        # initialize the networks dataframe that will contain all access points nearby 
+        #pandas.set_option('display.max_rows', None)
+        networks = pandas.DataFrame(columns=["BSSID", "SSID", "Vendor", "dBm_Signal", "Channel", "Crypto"])
+        # set the index BSSID (MAC address of the AP)
+        networks.set_index("BSSID", inplace=True)
+
+        while True:
+
+            os.system("clear")
+
+            for target in self.targetList: 
+
+                networks.loc[target.bssid] = (target.ssid, target.vendor, target.dBm, target.ch, target.crypto)
+
+            print(networks)
+            print(f"Total length: {len(self.targetList)}\n")
+
+            time.sleep(1)
+
+    def startSniffer(self):
+        ''' Starts and runs the packet sniffer \n note: because this is blocking, it must be its own thread '''
+        # start sniffing
+        try:
+            sniff(prn=self.callback, iface=self.interface)
+        except TypeError:
+            print("Scapy ran into a type error")
+            # Restart thread
+            self.snifferThread = Thread(target=self.startSniffer, daemon=False)
+            self.snifferThread.start()
+
+    def close(self):
+        self.snifferThread.setDaemon(True)
+        sys.exit()
+                    
+    def startScanner(self):
+        ''' starts the channel hopper and display before starting the packet sniffer loops '''
+
+        self.printerThread = Thread(target=self.printTarget, daemon=True)
+        self.printerThread.start()
+
+        self.channelHopper = Thread(target=self.loop_channels, daemon=True)
+        self.channelHopper.start()
+
+        self.snifferThread = Thread(target=self.startSniffer, daemon=False)
+        self.snifferThread.start()
+
+def check_root():
+    ''' Checks to see if the system is running as root, wifi will break if not '''
+
+    if not os.geteuid() == 0 : 
+	    print("Run as root.")
+	    exit(1)
 
 if __name__ == "__main__":
     
-    # start the thread that prints all the networks
-    printer = Thread(target=print_all)
-    printer.daemon = True
-    printer.start()
+    print("Starting standalone scanner: ")
 
-    # start the channel changer
-    channel_changer = Thread(target=change_channel)
-    channel_changer.daemon = True
-    channel_changer.start()
+    # check to see if running as root
+    check_root()
 
-    # start sniffing
-    sniff(prn=callback, iface=interface)
+    # default interface
+    interface = "wlx9cefd5fcd434"
+
+    # looks for custom arguments
+    if len(sys.argv) > 1 :
+        interface = str(sys.argv[1])
+
+    print(f"Using interface: {interface}")
+
+    try:
+        scanner = WifiScanner(interface)
+        scanner.startScanner()
+    except (KeyboardInterrupt, SystemExit):
+        print("shutting Down")
+        scanner.close()
