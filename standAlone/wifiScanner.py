@@ -5,6 +5,7 @@ import time # needed for sleep
 import os # needed to run commands
 
 import csv # needed for manufacturer lookup
+import pickle # needed for data writing / reading
 
 # Note, must run as root for wifi stuff
 
@@ -91,6 +92,7 @@ class WifiScanner:
         self.loadDictionary()
         self.setupInterface()
         self.validChannel = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '36', '38', '40', '42', '44', '46', '48', '52', '54', '56', '58', '60', '62', '64', '100', '102', '104', '106'}
+        self.loadTargets()
 
     def loadDictionary(self):
         ''' Handles setting up the dictionary that will give the vendor identification'''
@@ -142,6 +144,9 @@ class WifiScanner:
 
             newTarget.setVendor(self.vendorDict.get(newTarget.key))
 
+            
+
+            # Adding Target to Target List
             matched = False
             for target in self.targetList: 
                 
@@ -192,6 +197,30 @@ class WifiScanner:
 
             time.sleep(1)
 
+    def saveTargets(self):
+        ''' Regularly saves the targets to a file for storage '''
+
+        while True:
+
+            saveFile = open('wifiLog.pkl', 'wb')
+            pickle.dump(self.targetList, saveFile, -1)
+            saveFile.close()
+
+            #print("Writing to log")
+
+            time.sleep(60)
+
+    def loadTargets(self):
+        ''' Loads the old target list from a pickle '''
+        try:
+            f = open('wifiLog.pkl', 'rb')
+            print("Loading old Target List")
+            self.targetList = pickle.load(f)
+            #print(str(self.targetList))
+            f.close()
+        except:
+            print("Load file does not exist")
+
     def startSniffer(self):
         ''' Starts and runs the packet sniffer \n note: because this is blocking, it must be its own thread '''
         # start sniffing
@@ -210,15 +239,18 @@ class WifiScanner:
     def startScanner(self):
         ''' starts the channel hopper and display before starting the packet sniffer loops '''
 
+        self.snifferThread = Thread(target=self.startSniffer, daemon=False)
+        self.snifferThread.start()
+        
         self.printerThread = Thread(target=self.printTarget, daemon=True)
         self.printerThread.start()
 
         self.channelHopper = Thread(target=self.loop_channels, daemon=True)
         self.channelHopper.start()
 
-        self.snifferThread = Thread(target=self.startSniffer, daemon=False)
-        self.snifferThread.start()
-
+        self.saveThread = Thread(target=self.saveTargets, daemon=True)
+        self.saveThread.start()
+        
 def check_root():
     ''' Checks to see if the system is running as root, wifi will break if not '''
 
