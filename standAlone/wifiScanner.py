@@ -89,6 +89,7 @@ class WifiScanner:
         self.interface = str(interface)
         self.ch = 1
         self.targetList = []
+        self.quickList = []
         self.loadDictionary()
         self.setupInterface()
         self.validChannel = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '36', '38', '40', '42', '44', '46', '48', '52', '54', '56', '58', '60', '62', '64', '100', '102', '104', '106'}
@@ -141,10 +142,9 @@ class WifiScanner:
             crypto = stats.get("crypto")
             
             newTarget = WifiTarget(bssid, ssid, dbm_signal, channel, crypto)
-
             newTarget.setVendor(self.vendorDict.get(newTarget.key))
 
-            
+            self.quickList.append(newTarget)
 
             # Adding Target to Target List
             matched = False
@@ -179,7 +179,7 @@ class WifiScanner:
         ''' prints out the currently tracked targets to the screen \n needs to be a separate thread'''
 
         # initialize the networks dataframe that will contain all access points nearby 
-        #pandas.set_option('display.max_rows', None)
+        pandas.set_option('display.max_rows', None)
         networks = pandas.DataFrame(columns=["BSSID", "SSID", "Vendor", "dBm_Signal", "Channel", "Crypto"])
         # set the index BSSID (MAC address of the AP)
         networks.set_index("BSSID", inplace=True)
@@ -188,10 +188,13 @@ class WifiScanner:
 
             os.system("clear")
 
-            for target in self.targetList: 
+            for target in self.quickList: 
 
-                networks.loc[target.bssid] = (target.ssid, target.vendor, target.dBm, target.ch, target.crypto)
+                if "dji" in str(target.vendor).lower() or "skydio" in str(target.vendor).lower() or "yune" in str(target.vendor).lower() or "parrot" in str(target.vendor).lower() or "rasp" in str(target.vendor).lower() or "none" in str(target.vendor).lower():
+                    networks.loc[target.bssid] = (target.ssid, target.vendor, target.dBm, target.ch, target.crypto)
 
+            # clear the quicklist so that old signals go away
+            self.quickList = []
             print(networks)
             print(f"Total length: {len(self.targetList)}\n")
 
