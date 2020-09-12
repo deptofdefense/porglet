@@ -6,9 +6,9 @@ PORGLET is a low cost and small form factor drone detection system.  The intent 
 
 Porglet works by having multiple low cost sensors working together to sweep through the 1 MHz to 6 GHz spectrum and attempt to identify and log any suspected drone signals.  By using multiple low cost devices, we replicate the functionality of a large expensive SDR platform in a more disposable setup.
 
-The standalone version of porglet can be found [here](./standAlone/README.md).  In this version, each scanner operates as separate standalone programs operating and logging data in isolation.  This build was designed for rapid deployment because by keeping the modules isolated there's no risk of cascading failures.  However this version of porglet should also be the slowest, because there is no attempt to optimize the scanning techniques of the modules.
+The standalone version of porglet can be found [here](./standAlone/).  In this version, each scanner operates as separate standalone programs operating and logging data in isolation.  This build was designed for rapid deployment because by keeping the modules isolated there's no risk of cascading failures.  However this version of porglet should also be the slowest, because there is no attempt to optimize the scanning techniques of the modules.
 
-The integrated version of porglet is found [here](./dev/README.md)
+The integrated version of porglet is found [here](./dev/)
 
 ### Wide Sweeper
 
