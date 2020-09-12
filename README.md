@@ -20,3 +20,10 @@ The goal is that by preemptively identifying which frequencies may contain a sig
 
 The Wifi sweeper works by scanning both the 2.4GHz and 5GHz bands to identify all wireless networks running in the area.  It then compares the BSSID addresses of each access point to see if they match any vendor of interest.  If there is a match it is printed out on the terminal as an alert, otherwise it gets silently added to the log file.
 
+### Zigbee Sweeper
+
+The Zigbee sweeper works using a modified TI Zigbee dongle to listen and decode zigbee packets sent within range of the device
+
+### Galileo
+
+Galileo exists as a docker program that scans the current band it is looking at for any recognizable hopping pattern that could be tied to a specific handset or drone.
