@@ -12,11 +12,11 @@ TBA
 
 ### Wifi
 
-[wifiScanner](./wifiScanner.py) is the standalone version of the WiFi Scanner software.  To run it with a unique wifi dongle, run `sudo python3 wifiScanner.py <InterfaceName>`.  In order to use commands like `iwconfig`, the program must be run as root.  
+[wifiScanner](./wifi/wifiScanner.py) is the standalone version of the WiFi Scanner software.  To run it with a unique wifi dongle, run `sudo python3 wifiScanner.py <InterfaceName>`.  In order to use commands like `iwconfig`, the program must be run as root.  
 
-It will write all the targets that it sees to a binary pickle file [wifiLog](./wifiLog.pkl).  This log is updated every minute, and consists of a serialized list of Wifi networks seen.  High priority targets, like DJI, Parrot, Skydio, ect targets will get printed straight to the terminal when they are noticed.  However all networks seen will get written to the log file.  To view the log file after the fact, use [wifiLogReader](./wifiLogReader.py) to display the contents of the file.
+It will write all the targets that it sees to a binary pickle file [wifiLog](./wifi/wifiLog.pkl).  This log is updated every minute, and consists of a serialized list of Wifi networks seen.  High priority targets, like DJI, Parrot, Skydio, ect targets will get printed straight to the terminal when they are noticed.  However all networks seen will get written to the log file.  To view the log file after the fact, use [wifiLogReader](./wifi/wifiLogReader.py) to display the contents of the file.
 
-To update the dictionary of MAC addresses and vendors, run [macUpdater](./macUpdater.py) to pull the latest csv files from the IEEE.  Note: these lists do not update often and require a internet connection, so for right now there is no plan to automate updating the list.
+To update the dictionary of MAC addresses and vendors, run [macUpdater](./wifi/macUpdater.py) to pull the latest csv files from the IEEE.  Note: these lists do not update often and require a internet connection, so for right now there is no plan to automate updating the list.
 
 ### Zigbee
 
