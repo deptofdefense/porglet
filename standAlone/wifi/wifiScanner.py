@@ -198,6 +198,11 @@ class WifiScanner:
             print(networks)
             print(f"Total length: {len(self.targetList)}\n")
 
+            #temp
+            saveFile = open('wifiLog.pkl', 'wb')
+            pickle.dump(self.targetList, saveFile, -1)
+            saveFile.close()
+
             time.sleep(1)
 
     def saveTargets(self):
@@ -209,7 +214,7 @@ class WifiScanner:
             pickle.dump(self.targetList, saveFile, -1)
             saveFile.close()
 
-            #print("Writing to log")
+            print("Writing to log")
 
             time.sleep(60)
 
@@ -269,7 +274,7 @@ if __name__ == "__main__":
     check_root()
 
     # default interface
-    interface = "wlx9cefd5fcd434"
+    interface = "wlx9cefd5fd14f7"
 
     # looks for custom arguments
     if len(sys.argv) > 1 :
