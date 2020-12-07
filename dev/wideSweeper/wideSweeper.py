@@ -1,8 +1,10 @@
 import subprocess # needed for hackrf sweep
-import sys # needed for file stuff
+import sys # needed for rabbit
 import os # needed for file stuff
 import time # needed for sleep
 from threading import Thread # needed for threads
+
+import pika # needed for rabbitMQ
 
 class WideSweeper:
     ''' Class to handle sweeping RF channels for porglet '''
@@ -14,32 +16,33 @@ class WideSweeper:
         self.maxFreq = maxFreq
         self.binSize = binSize
         self.noiseFloor = float(-50)
-        self.freqList = []
-        self.subscribers = set()
+
+        # rabbitMQ setup
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        self.channel = self.connection.channel()
+        self.channel.exchange_declare(exchange='freqSweep', exchange_type='fanout')
 
     def close(self):
         ''' close down the module '''
         self.bigSweep.kill()
         self.sweepThread.setDaemon(True)
         sys.exit()
-
-    def register(self, who):
-        ''' registers new subscriber to the set '''
-
-        self.subscribers.add(who)
     
-    def removeSub(self, who):
-        ''' removes subscriber from set '''
-        
-        self.subscribers.discard(who)
-    
-    def updateFreqList(self, newList):
-        ''' Update method used to identify when to call observer updater '''
+    def publishLists(self, freqList, dBmList):
+        """Publishes the current lists out via RabbitMQ
 
-        self.freqList = newList
+        Args:
+            freqList (List [ints]): A list of all of the frequencies of interest for a given sweep.  In Hz
+            dBmList (List [floats]): A list of the associated dBm value for each frequency of interest
+        """
 
-        for subscriber in self.subscribers: # updates all subscribers
-            subscriber.update(self.freqList)
+        message = ""
+
+        for i in range(len(freqList)):
+            message += f"{str(freqList[i])} {str(dBmList[i])} "
+
+        #print(message)
+        self.channel.basic_publish(exchange='freqSweep', routing_key='', body=message)
 
     def sweepFrequencies(self):
         ''' spawns the hackrf_sweep process and then acts on its output '''
@@ -52,7 +55,7 @@ class WideSweeper:
         tempFloor = float(0)
         counter = 0
         tempFreq = []
-
+        tempDBm = []
 
         while True:
             #try:
@@ -66,36 +69,40 @@ class WideSweeper:
                 if splitStr[2] == startFreq: # check if a loop has finished
 
                     self.noiseFloor = tempFloor / counter
-                    self.updateFreqList(tempFreq)
+                    self.publishLists(tempFreq, tempDBm)
                     
+                    # display info for debugging
+                    localTime = time.asctime(time.localtime(time.time()))
+                    print("\nLoop completed at: " + localTime)
+                    print("New noise floor: " + str(self.noiseFloor))
+                    print(f"Total Targets: {len(tempFreq)}")
+
                     # Reset temp variables
                     counter = float(0)
                     tempFloor = float(0)
                     tempFreq = []
-
-                    # display info for debugging
-                    localTime = time.asctime(time.localtime(time.time()))
-                    #print("\nLoop completed at: " + localTime)
-                    #print("New noise floor: " + str(self.noiseFloor))
-                    #print(f"Total Targets: {len(self.freqList)}")
-
-                    
+                    tempDBm = []
+             
                 if float(splitStr[6]) > self.noiseFloor: # First freqency is worth checking out
                     tempFreq.append(int(splitStr[2]) + (0 * round(float(splitStr[4]))))
+                    tempDBm.append(float(splitStr[6]))
                 if float(splitStr[7]) > self.noiseFloor: # Second freqency is worth checking out
                     tempFreq.append(int(splitStr[2]) + (1 * round(float(splitStr[4]))))
+                    tempDBm.append(float(splitStr[7]))
                 if float(splitStr[8]) > self.noiseFloor: # Third freqency is worth checking out
                     tempFreq.append(int(splitStr[2]) + (2 * round(float(splitStr[4]))))
+                    tempDBm.append(float(splitStr[8]))
                 if float(splitStr[9]) > self.noiseFloor: # Fourth freqency is worth checking out
                     tempFreq.append(int(splitStr[2]) + (3 * round(float(splitStr[4]))))
+                    tempDBm.append(float(splitStr[9]))
                 if float(splitStr[10]) > self.noiseFloor: # Fifth freqency is worth checking out
-                    tempFreq.append(int(splitStr[2]) + (4 * round(float(splitStr[4]))))                    
-                
-                
+                    tempFreq.append(int(splitStr[2]) + (4 * round(float(splitStr[4]))))   
+                    tempDBm.append(float(splitStr[10]))                 
                 
             else:
                 print("Something went wrong with spliting bigSweep response")
                 self.bigSweep.kill()
+                self.connection.close()
                 sys.exit()
 
             #except(KeyboardInterrupt, SystemExit):
