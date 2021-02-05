@@ -60,3 +60,4 @@ target/
 *.16sc
 *.sc16
 *.cfile
+*.tmp
