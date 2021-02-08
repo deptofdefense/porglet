@@ -13,7 +13,7 @@ class SweepViewer:
     '''
 
     def __init__(self) -> None:
-        self.minFreq = 400
+        self.minFreq = 0
         self.maxFreq = 6000
 
         self.dataList = [0]
