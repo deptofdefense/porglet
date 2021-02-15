@@ -275,6 +275,7 @@ if __name__ == "__main__":
 
     # default interface
     interface = "wlx9cefd5fd14f7"
+    interface = "wlx9cefd5fbc657"
 
     # looks for custom arguments
     if len(sys.argv) > 1 :

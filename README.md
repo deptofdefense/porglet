@@ -6,7 +6,7 @@ PORGLET is a low cost and small form factor drone detection system.  The intent 
 
 Porglet works by having multiple low cost sensors working together to sweep through the 1 MHz to 6 GHz spectrum and attempt to identify and log any suspected drone signals.  By using multiple low cost devices, we replicate the functionality of a large expensive SDR platform in a more disposable setup.
 
-The standalone version of porglet can be found [here](./standAlone/).  In this version, each scanner operates as separate standalone programs operating and logging data in isolation.  This build was designed for rapid deployment because by keeping the modules isolated there's no risk of cascading failures.  However this version of porglet should also be the slowest, because there is no attempt to optimize the scanning techniques of the modules.
+The standalone version of porglet can be found [here](./standAlone/).  
 
 The integrated version of porglet is found [here](./dev/)
 
@@ -27,3 +27,51 @@ The Zigbee sweeper works using a modified TI Zigbee dongle to listen and decode 
 ### Galileo
 
 Galileo exists as a docker program that scans the current band it is looking at for any recognizable hopping pattern that could be tied to a specific handset or drone.
+
+## Development Environment
+### Rabbitmq
+You need a rabbitmq server running on the host running porglet. 
+Adapted instructions from [their site follow](https://www.rabbitmq.com/install-debian.html) for an Ubuntu 20.04 box
+```
+curl -fsSL https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc | sudo apt-key add -
+sudo apt-key adv --keyserver "hkps://keys.openpgp.org" --recv-keys "0x0A9AF2115F4687BD29803A206B73A36E6026DFCA"
+sudo apt-get install apt-transport-https
+vim /etc/apt/sources.list.d/bintray.erlang.list
+sudo tee /etc/apt/sources.list.d/bintray.erlang.list <<EOF
+# This repository provides Erlang packages produced by the RabbitMQ team
+# See below for supported distribution and component values
+deb https://dl.bintray.com/rabbitmq-erlang/debian focal erlang-22.x
+EOF
+sudo apt-get update -y
+sudo apt-get install -y erlang-base                         erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets                         erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key                         erlang-runtime-tools erlang-snmp erlang-ssl                         erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
+sudo apt-get install rabbitmq-server -y --fix-missing
+```
+
+### Remote Development
+Ultimately, porglet will have a handful of dongles plugged into it. Although you could develop it locally to an extent, you'll most likely be developing on a remote box. You can ssh in and rock vim or you can mount the remote machine with sshfs. 
+#### SSH Config
+Although you can access the machine with the hostname, for example `stk-NUC10i7FNK` the keystroke conscious developer may create a shortcut in `~/.ssh/config`
+```
+Host porg
+    HostName 192.168.1.208
+    User xmmgr
+```
+It is recommended to add your public key(`~/.ssh/id_rsa.pub`) to the remote machines authorized_keys file(`~/.ssh/authorized_keys`). Once done you will not be prompted for a password.
+
+#### SSHFS config
+brew install --cask osxfuse
+sshfs porg:/home/xmmgr/porglet ~/dev/porglet/nuc
+code ~/dev/porglet/nuc
+
+## Directory Structure
+### [dev](./dev/)
+This is the integrated porglet application
+
+### [standAlone](./standAlone/)
+In this version, each scanner operates as separate standalone programs operating and logging data in isolation.  This build was designed for rapid deployment because by keeping the modules isolated there's no risk of cascading failures.  However this version of porglet should also be the slowest, because there is no attempt to optimize the scanning techniques of the modules.
+
+### [support](./support)
+Utility scripts to help with various tasks like IQ file conversions.
+
+### [rxcommand](./rxcommand/)
+A class and cli POC for sending RX control messages to CFE/Galileo. When porglet detects an interesting signal it can tell galileo to investigate.

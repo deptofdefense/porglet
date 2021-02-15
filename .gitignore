@@ -2,6 +2,14 @@
 __pycache__/
 *.py[cod]
 
+#RF stuff
+*.16sc
+*.sc16
+*.cfile
+*.tmp
+*Log.pkl
+
+
 # C extensions
 *.so
 
@@ -56,8 +64,3 @@ docs/_build/
 # PyBuilder
 target/
 
-#RF stuff
-*.16sc
-*.sc16
-*.cfile
-*.tmp
