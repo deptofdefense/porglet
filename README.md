@@ -28,7 +28,35 @@ The Zigbee sweeper works using a modified TI Zigbee dongle to listen and decode 
 
 Galileo exists as a docker program that scans the current band it is looking at for any recognizable hopping pattern that could be tied to a specific handset or drone.
 
+### Reporting
+
+This is a stub, but as of now we are looking at the python hyde static generator, see /web
+
+```
+pip install hyde
+hyde -s ~/porglet/web create
+cd web
+hyde gen
+hyde serve
+```
+
+### Todos
+
+1. Integrate rxcommand with widesweeper when frequency of interest is encountered
+2. Configure stomp listener to send sigdetect event to rabbitmq
+3. Create main file that starts all sweepers
+4. Reporting(static html - daily reports?)
+5. Waterfalls in reports via [d3 waterfall lib](https://github.com/ddcc/d3-waterfall/)
+
 ## Development Environment
+
+### Dependencies
+* Python 3.x
+* [hackrf tools](https://github.com/mossmann/hackrf/wiki/Operating-System-Tips)
+* python packages
+  * `pip install pika docopt pandas pickle stomp.py protobuf hyde`
+
+
 ### Rabbitmq
 You need a rabbitmq server running on the host running porglet. 
 Adapted instructions from [their site follow](https://www.rabbitmq.com/install-debian.html) for an Ubuntu 20.04 box
@@ -75,3 +103,6 @@ Utility scripts to help with various tasks like IQ file conversions.
 
 ### [rxcommand](./rxcommand/)
 A class and cli POC for sending RX control messages to CFE/Galileo. When porglet detects an interesting signal it can tell galileo to investigate.
+
+### [web](./web/)
+Hyde static generated site

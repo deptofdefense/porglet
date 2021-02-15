@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 
+
+# Porglet
+web/
+
 #RF stuff
 *.16sc
 *.sc16
