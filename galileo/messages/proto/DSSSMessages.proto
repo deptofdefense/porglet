@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Message(s) for DSSS App
+// 
+//
+// In every message, always add the first parameter as:
+//    optional string msgName   = 1 [default = "MSG_NAME"];
+//    optional bool   isTrigger = 2 [default = true];
+//
+
+// Include message types from other files
+
+message DSSSProduct
+{
+  optional string msgName      = 1 [default = "DSSS_PRODUCT"];
+  optional double rf_hz        = 2;
+  optional double chiprate     = 3;
+  optional string code         = 4;
+  optional int32  codelength   = 5;
+  optional double wholeSeconds = 6;
+  optional double fracSeconds  = 7;
+  optional float  confidence   = 8;
+}

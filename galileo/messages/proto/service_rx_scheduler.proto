@@ -1,0 +1,36 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_rx_scheduler;
+
+message RxSchedulerConfig {
+
+    //Required: imports in the base schedule for RXScheduler
+    //all fields are required and goes into the rx-scheduler.xml before startup
+    message ScheduleImportInfo {
+        required string channelId = 1;
+        required string importPath = 2;
+    }
+    //Optional: imports in a timeline which is used to deviate from the base schedule
+    //all fields are required if used and goes into the rx-scheduler.xml before startup
+    message TimelineImportInfo{
+        optional string channelId = 1;
+        optional string startTime = 2;
+        optional string stopTime = 3;
+        optional string filePath = 4;
+    }
+    //Optional: imports in a file which stores a range of frequenies the user wishes to 
+    //blackout from the RXScheduler.
+    //filepath is required if used and goes into the rx-scheduler.xml before startup
+    message BlackoutImportInfo{
+        optional string filePath = 1;
+    }
+
+    optional string msgName = 1 [default = "service_rx_scheduler.RxSchedulerConfig"];
+
+    repeated ScheduleImportInfo scheduleImportInfos = 2;
+    repeated TimelineImportInfo timelineImportInfos = 3;
+    repeated BlackoutImportInfo blackoutImportInfos = 4;
+}

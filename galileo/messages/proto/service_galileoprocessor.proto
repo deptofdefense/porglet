@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_galileoprocessor;
+
+message GalileoProcessorConfig{
+    optional string msgName = 1 [default = "service_galileoprocessor.GalileoProcessorConfig"];
+    // True to write debug files to debugRootPath directory
+    optional bool writeDebugFiles = 2 [default = false];
+    // Query the database for new energy bursts every batchSizeSec seconds
+    optional double batchSizeSec = 3 [default=5.0];
+    // Root path for debug files -- WARNING: Path will be deleted
+    optional string debugRootPath = 4 [default="/scratch/test-dataplane/"];
+    // Segmenter configuration file
+    optional string segmenterConfig = 5 [default="/user/config/segmenter_config.xml"];
+}
+

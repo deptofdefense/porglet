@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_spectrum_exporter;
+
+message SpectrumExporterConfig{
+    optional string msgName = 1 [default = "service_spectrum_exporter.SpectrumExporterConfig"];
+
+    // Length of queue for each dataplane product message
+    optional int32 channel = 2 [default = 72];
+
+    // This is the channel number that will be checked against in the 
+    // SnapInfo messages
+    optional int32 fftLength = 3 [default = 4096];
+}

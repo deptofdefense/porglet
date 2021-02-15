@@ -1,0 +1,171 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for interfacing between the extra fork server
+// and client.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package extra_fork_msg;
+
+////
+// Sent from the processing macro to launch M2Extra and load the table file.
+// This message is also used as the response message.
+//
+// msgName: EXTRA_FORK_LOAD, used to identify the message
+// channel: Channel number from the processing macro
+// inputPort: Input port to use for ZPipe
+// outputPort: Output port to use for ZPipe
+// videoPort: Video output port to use for ZPipe
+// tableFile: Name of the table file without the path (must be in aux path)
+// show: False if M2Extra should be hidden by default
+// status: Status of the result or REQUEST if sent to the server
+// msgID: ID to use for the return message
+message ExtraForkLoad
+{
+  enum Status {
+    FAILED = -1;
+    REQUEST = 0;
+    SUCCESS = 1;
+  }
+  
+  optional string msgName = 1 [default = "EXTRA_FORK_LOAD"];
+  optional int32  channel = 2;
+  optional int32  inputPort = 3;
+  optional int32  outputPort = 4;
+  optional int32  videoPort = 5;
+  optional string tableFile = 6;
+  optional bool   show = 7;
+  optional Status status = 8;
+  optional double timedelta = 9;
+  optional int32  msgID = 10;
+}
+
+////
+// Load the Table File to M2Extra.
+// 
+// msgName: EXTRA_FORK_TABLE, used to identify the message
+// channel: Channel number from the processing macro
+// tableFile: Name of the table file without the path (must be in aux path)
+message ExtraForkTable
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_TABLE"];
+  optional int32  channel = 2;
+  optional string tableFile = 3;
+}
+
+////
+// Reset the M2Extra process and flush the data.  This should be called when
+// you are done processing.
+// 
+// msgName: EXTRA_FORK_RESET, used to identify the message
+// channel: Channel number from the processing macro
+message ExtraForkReset
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_RESET"];
+  optional int32  channel = 2;
+}
+
+////
+// Kill the M2Extra process.  This should be called when
+// you are done processing.
+// 
+// msgName: EXTRA_FORK_KILL, used to identify the message
+// channel: Channel number from the processing macro
+message ExtraForkKill
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_KILL"];
+  optional int32  channel = 2;
+}
+
+////
+// Clean up the M2Extra process.  This should be called when
+// you are done processing.
+// 
+// msgName: EXTRA_FORK_CLEAN, used to identify the message
+// channel: Channel number from the processing macro
+message ExtraForkClean
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_CLEAN"];
+  optional int32  channel = 2;
+}
+
+////
+// Ask the extra fork server for a parameter.  This message will also be used
+// for the return value.  Currently, only the double data type is supported.
+// 
+// msgName: EXTRA_FORK_POLL, used to identify the message
+// channel: Channel number from the processing macro
+// parameter: Name of the requested parameter (see extrafork)
+// value: Return value from the extrafork server or ignored for request
+// status: Status of the result or REQUEST if sent to the server
+// msgID: ID to use for the return message
+message ExtraForkPoll
+{
+  enum Status {
+    FAILED = -1;
+    REQUEST = 0;
+    SUCCESS = 1;
+  }
+  
+  optional string msgName = 1 [default = "EXTRA_FORK_POLL"];
+  optional int32  channel = 2;
+  optional string parameter = 3;
+  optional float  value = 4;
+  optional Status status = 5;
+  optional int32  msgID = 6;
+}
+
+message ExtraForkRaw
+{
+  enum Status {
+    FAILED = -1;
+    REQUEST = 0;
+    SUCCESS = 1;
+  }
+  
+  optional string msgName = 1 [default = "EXTRA_FORK_RAW"];
+  optional int32  channel = 2;
+  optional string parameter = 3;
+  optional string resp = 4;
+  optional float  value = 5;
+  optional Status status = 6;
+  optional int32  msgID = 7;
+}
+
+
+
+////
+// Show or hide the M2Extra windows.  The plots will be disabled when hidden.
+// 
+// msgName: EXTRA_FORK_SHOW, used to identify the message
+// channel: Channel number from the processing macro
+// show: False if M2Extra should be hidden
+message ExtraForkShow
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_SHOW"];
+  optional int32  channel = 2;
+  optional bool   show = 3;
+}
+
+//
+//
+//
+//
+message ExtraForkPollRequest
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_POLL_REQUEST"];
+  repeated string properties = 2;
+}
+
+message ExtraForkPollResponse
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_POLL_RESPONSE"];
+  repeated string properties = 2;
+  optional ExtraForkPollRequest request = 3;
+}

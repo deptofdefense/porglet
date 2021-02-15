@@ -1,0 +1,299 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+////
+// This file generally does not contain messages that will be sent alone.
+// Instead, it is meant as a place to aggregate common messages that will be
+// contained in multiple files to avoid circular dependencies from includes.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_common_msg;
+
+////
+// Single blacklist entry, which is included by BlacklistStatus messages
+//
+// name: Name to use for the blacklist entry
+// minRF: Minimum RF to ignore if positive in Hz
+// maxRF: Maximum RF to ignore if positive in Hz
+// scrypt: Scrypt file to ignore if specified
+// timeout: If positive, number of seconds remaining trigger to remain active
+// uniqueID: ID for addressing an entry uniquely
+message BlacklistEntry
+{
+  optional string name    = 1;
+  optional double minRF   = 2 [default = -1];
+  optional double maxRF   = 3 [default = -1];
+  optional string scrypt  = 4;
+  optional float  timeout = 5 [default = -1];
+  optional string uniqueID = 6 [default = ""];
+}
+
+////
+// Message that holds information about a single channel's M2Extra process.
+// This is used by ExtraForkConfig.
+//
+// channelID: Index of the channel from ExtraPM
+// inputPort: Start input port number (e.g. 9100 will cycle through 9100-9109)
+// outputPort: Start output port number
+// videoPort: Start video output port number
+// launch_on_start: True/False trigger to start M2Extra right away
+message ExtraForkChannel
+{
+  optional int32 channelID       = 1;
+  optional int32 inputPort       = 2;
+  optional int32 outputPort      = 3;
+  optional int32 videoPort       = 4;
+  optional int32 launch_on_start = 5;
+}
+
+// Message to send to active app to fully go active, no longer just
+// staging
+// Time and host name is just information overload
+message InterceptGoActive
+{
+  optional string msgName   = 1 [default = "INTERCEPT_GO_ACTIVE"];
+  optional string hostname  = 2 [default = ""];
+  optional double j1970Time = 3;
+  optional string uniqueID  = 4 [default = ""];
+  optional bool   jam       = 5 [default = false];
+}
+
+message GeoTip
+{
+    repeated PreDSource pred_source = 1;
+    // nvpham
+    optional string tip_id = 4;
+}
+
+
+message PreDSource
+{
+    optional string filename = 1;
+    optional string hostname = 2;
+    optional MetaData meta_data = 3;
+}
+
+message MetaData
+{
+    optional double wholeSec = 1;
+    optional double fracSec = 2;
+    optional double duration = 3;
+
+    optional double centerFrequency = 10;
+    optional double sampleRate  = 11;
+    optional double bandwidth = 12;
+
+    optional string eltex = 20;
+    optional string soiNum = 21;
+    optional string globalId = 22;
+}
+
+message GeoResult
+{
+  optional string msgName     = 1 [default = "GEO_RESULT"];
+  optional string hostname    = 2;
+  optional double j1970Time   = 3;
+  optional double x           = 4 ;
+  optional double y           = 5 ;
+  optional double z           = 6 ;
+  optional double alt         = 7;
+  optional double lat         = 8;
+  optional double lon         = 9;
+  optional double semiMajor   = 10 ;
+  optional double semiMinor   = 11 ;
+  optional double orientation = 12 ;
+  optional string soi         = 13;
+  optional string uniqueID    = 14 [default = ""];
+  optional int32  channel     = 15 [default = 1];
+  optional string eventID     = 16;
+  optional float  wpLatitude  = 17;
+  optional float  wpLongitude = 18;
+  optional float  velocity    = 19;
+  optional float  bearing     = 20;
+  optional float  seqnum      = 21;
+  //optional bool isPrediction  = 22 [default = false];
+  //optional float major        = 23 [default = 0];
+  //optional float minor        = 24 [default = 0];
+  //optional float vector       = 25 [default = 0];
+  //nvpham
+  optional bool valid           = 26;
+  optional double cep           = 27;
+  optional double freq_hz       = 28;
+  optional double bw_hz         = 29;
+  optional string combining_type = 30;
+  optional string diagnostic    = 31;
+  optional string qualifier     = 32;
+  optional string tip_id        = 33;
+}
+
+message ClipRequest
+{
+
+    optional string msgName = 1 [default = "CLIPREQUEST"];
+    optional double timeWhole = 2;
+    optional double timeFractional = 3;
+    optional double duration = 4;
+
+    optional double centerFrequency = 5;
+    optional double freqOffset = 6;
+    optional double sampleRate  = 7;
+    optional double bandwidth = 8;
+
+    optional string soiNum = 9;
+    optional string globalId = 10;
+    optional int64  idNumber = 11;
+    optional string sensorName = 12;
+
+}
+
+message ClipResponse
+{
+    optional string msgName = 1 [default = "CLIPRESPONSE"];
+    optional GeoTip geoTip = 2;
+    optional int64 idNumber = 3;
+}
+
+
+message DetectionTip
+{
+    optional string msgName             = 1 [default = "DETECTIONTIP"];
+    optional string det_id              = 2;
+    optional string sensor_id           = 3;
+    optional bool   has_pred            = 4;
+    optional string file_location       = 5;
+    optional double start_time_whole    = 6;
+    optional double start_time_frac     = 7;    
+    optional double duration_millisec   = 8;
+    optional double center_tune_freq_hz = 9;
+    optional double bandwidth_hz        = 10;
+    repeated Hop    hops                = 11;
+    repeated Burst  bursts              = 12;
+}
+
+message Hop
+{
+    optional string hop_id              = 1;
+    optional double start_time_whole    = 2;
+    optional double start_time_frac     = 3;
+    optional double duration_millisec   = 4;
+    optional double hop_center_freq_hz  = 5;
+    optional double hop_bw_hz           = 6;
+}
+
+message Burst
+{
+    optional string burst_id              = 1;
+    optional double start_time_whole      = 2;
+    optional double start_time_frac       = 3;
+    optional double duration_millisec     = 4;
+    optional double burst_center_freq_hz  = 5;
+    optional double burst_bw_hz           = 6;
+}
+
+
+////
+// Message to return the gps location of a sensor in a network of sensors
+//   other information about the rx sensor is included
+message SensorStatus
+{
+
+  optional string           msgName              = 1 [default = "SENSOR_STATUS"];
+  optional float            lat                  = 2;
+  optional float            lon                  = 3;
+  optional float            alt                  = 4;
+  optional int64            timestamp            = 5;
+  optional string           sensorName           = 6 [default = ""];
+  repeated ReceiverStatus   rxStatus             = 7;
+
+}
+
+message ReceiverStatus
+{
+
+  optional string           msgName              = 1 [default = "RECEIVER_STATUS"];
+  optional int32            idNum                = 2;
+  optional string           name                 = 3;
+  optional string           type                 = 4;
+  optional float            rxFreq               = 5;
+  optional float            rxBandwidth          = 6;
+
+}
+
+////
+// Timestamp message
+//
+// msgName: TIMESTAMP, used to identify the message
+// seconds: Seconds since epoch
+// nanos: Additional nanoseconds
+message Timestamp
+{
+  optional int64 seconds  = 1;
+  optional float fseconds = 2;
+}
+
+////
+// Message to re-initialize service resources, used by ServiceCharMan
+//
+message ServiceReinitialize
+{
+  optional string msgName     = 1 [default = "SERVICE_REINITIALIZE"];
+}
+
+// Send the Heading value obtained (either by the Engr GUI or by an electronic sensor)
+// Note this goes into the SENSOR_LOCATION/GPS_POSITION messages
+message SensorHeading
+{
+  optional string msgName  = 1 [default = "SENSOR_HEADING"];
+  optional string hostname = 2;
+  optional double j1970Time = 3;
+  optional double heading  = 4;
+  optional double pitch = 5;
+  optional double roll = 6;
+}
+
+////
+// KeyValuePair Message
+// This message can be used by the caller to send an arbitrary
+// key value pair containing different types of information.
+// label                The human-readable meaning of the data
+// type                 The type ("bool", "int", "float", "string", "position")
+// value                A container holding the value of the data
+message KeyValuePair {
+    optional string label = 1;
+    optional ValueContainer value = 2;
+}
+
+////
+// ValueContainer Message
+// This message holds the values from a KeyValuePair message
+// bool_value           A bool
+// int_value            An Integer
+// float_value          A float
+// string_value         A string
+// position_value       A Position
+message ValueContainer {
+    optional bool bool_value = 1;
+    optional int32 int_value = 2;
+    optional float float_value = 3;
+    optional string string_value = 4;
+    optional GeodeticPosition position_value = 5;
+}
+
+////
+// Position Message
+// Special type of container for positional information
+// lat                  In Decimal Degrees
+// lon                  In Decimal Degrees
+// alt                  In feet ASL
+// alt_meters_hae       In meters WGS84 (HAE)
+message GeodeticPosition {
+    optional float lat = 1;
+    optional float lon = 2;
+    optional int64 alt = 3;
+    optional int64 alt_meters_hae = 4;
+}

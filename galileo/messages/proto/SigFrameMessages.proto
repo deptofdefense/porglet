@@ -1,0 +1,52 @@
+syntax = "proto2";
+
+package fv.sf.protos.SFProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.sf.protos";
+option java_outer_classname = "SFProtos";
+
+
+////
+// Signal Frame MESSAGES
+////
+
+////
+// This message contains a frame of processed data. It also has some header
+// information in it for follow-on message reads
+//
+// msgName: SIGFRAME, used to identify the message
+// signal_id: The signal ID of the frame
+// wholeSeconds: the J1950 Whole Seconds of the start of the frame
+// fractionalSeconds: the J1950 fractional second
+// duration: The duration in seconds of the frame
+// center_frequency: The center freq of the frame (in Hz)
+// center_freq_offset: An offset from the above center_freq (in Hz)
+// sample_rate: The sample rate prior to bit synch
+// bandwidth: The bandwidth of the signal prior to demod
+// power: The power of the frame prior to demod
+// ber: The Bit Error Rate of the frame if available
+// frame_length: The length of the frame in bytes
+// frame: the byte-packed frame of binary data
+// tail_id: if available, a pseudo-id for the SoI
+// sensor_name: the name of the sensor that demodulated the data
+// uuid: the string containing the SoI Event's uuid
+message SIGFrame {
+    optional string msgName = 1 [default = "SIGFRAME"];
+    optional string signal_id = 2;
+    optional double wholeSeconds = 3;
+    optional double fractionalSeconds = 4;
+    optional double duration = 5;
+    optional double center_frequency = 6;
+    optional double center_freq_offset = 7;
+    optional double sample_rate = 8;
+    optional double bandwidth = 9;
+    optional double power = 10;
+    optional double ber = 11;
+    optional int32 frame_length = 12 [default = 0];
+    optional bytes frame = 13;
+    optional int32 tail_id = 14;
+    optional string sensorName = 15 [default = ""];
+    optional string uuid = 16;
+}

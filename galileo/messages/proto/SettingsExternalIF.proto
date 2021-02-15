@@ -1,0 +1,37 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for ExternalIF in the falcon package.  Not sure
+// how this will really be used.  On some level, this is for testing.  But
+// I expect MainControl will use it to keep state.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName   = 1 [default = "MSG_NAME"];
+//    optional bool   isTrigger = 2 [default = true];
+//
+// Package used in c and java; python ignores
+package settings_exif_msg;
+
+// Include message types from other files
+
+
+message RequestStatus
+{
+  optional string msgName    = 1 [default = "REQUEST_STATUS"];
+  optional int32  msg_type   = 2 [default = 0];
+}
+
+message StatusUpdate
+{
+  optional string msgName       = 1 [default = "STATUS_UPDATE"];
+  optional float  rf_freq       = 2;
+  optional bool   spectral_inv  = 3 [default = false];
+  optional bool   activated     = 4 [default = false];
+  optional float  if_freq       = 5 [default = 160];
+}
+
+
+

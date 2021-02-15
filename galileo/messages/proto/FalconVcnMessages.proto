@@ -1,0 +1,198 @@
+syntax = "proto2";
+
+package fv.vcn.protos.VcnProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.vcn.protos";
+option java_outer_classname = "VcnProtos";
+
+
+///////////////////////////////////////////////////////////////
+// Status and info messages
+///////////////////////////////////////////////////////////////
+
+////
+// VcnPlatform -
+// uses the Signal and Suggestion messages
+message Signal {
+    required string signal_name = 1;
+    repeated string command = 2;
+    repeated Suggestion suggestion = 3;
+}
+
+message Suggestion {
+    optional double detected_center_frequency = 1;
+    optional double center_frequency = 2;
+    optional double frequency_excursion = 3;
+}
+
+message VcnPlatform {
+    repeated Signal signal = 1;
+}
+
+////
+// VcnStatus -
+// uses the HardwareStatus message
+message HardwareStatus {
+    enum HardwareState {
+        READY = 0;
+        NOT_READY = 1;
+        NOT_INSTALLED = 3;
+    }
+    optional HardwareState mta_status = 1;
+    optional bool is_sg_ready = 2;
+    required string message = 4;
+}
+
+message VcnStatus {
+    required HardwareStatus hardware_status = 1;
+    required bool is_active = 2;
+}
+
+
+////
+// VcnPlatformRequest - Request a VcnPlatform message from AppVcn
+message VcnPlatformRequest {
+}
+
+////
+// VcnStatusRequest - Request a VcnStatus message from AppVcn
+message VcnStatusRequest {
+}
+
+///////////////////////////////////////////////////////////////
+// Command/tasking messages
+///////////////////////////////////////////////////////////////
+
+////
+// VcnCommandRequest - Parameters for a Vcn request
+message VcnCommandRequest {
+    required string signal = 2;
+    required string command = 3;
+    required double center_frequency = 4;
+    optional double frequency_excursion = 5 [default = 0.0];
+}
+
+////
+// VcnOutput - set the VCN output state
+message VcnOutput {
+    required bool state = 1;
+}
+
+////
+// VcnResponse - Response message provided by AppVcn to commands
+message VcnResponse {
+    required bool success = 1;
+    optional string description = 2;
+}
+
+
+
+///////////////////////////////////////////////////////////////
+// Zapper messages
+///////////////////////////////////////////////////////////////
+
+////
+// ZapperStatus - get the status of the Zapper system
+message ZapperStatus
+{
+    optional string msgName     = 1 [default = "ZAPPERSTAT"];
+    optional string chan1Stat   = 2 [default = "OFF"];
+    optional string chan2Stat   = 3 [default = "OFF"];
+    optional string rx1Freq     = 4 [default = "2440"];
+    optional string rx2Freq     = 5 [default = "2440"];
+    optional string rx3Freq     = 6 [default = "2440"];
+    optional string rx4Freq     = 7 [default = "2440"];
+    optional string tx1Freq     = 8 [default = "2440"];
+    optional string tx2Freq     = 9 [default = "2440"];
+    optional string amp1        = 10 [default = "0"];
+    optional string amp2        = 11 [default = "0"];
+    optional string amp3        = 12 [default = "0"];
+    optional string meterChan   = 13 [default = "-1"];
+    optional string meterPower  = 14 [default = "-99"];
+}
+
+////
+// StopAll = stop all transmissions immediately
+message StopAll
+{
+    optional string msgName     = 1 [default = "STOPALL"];
+}
+
+////
+// ToneJam - Set tonejam using a specific platform or target ID
+message ToneJam
+{
+    optional string msgName     = 1 [default = "TONEJAM"];
+    optional string platform    = 2 [default = "NONE"];
+    optional int32 targetID    = 3 [default = -1];
+}
+
+////
+// ToneJamOff - Turn off a specific Tone Jam
+message ToneJamOff
+{
+    optional string msgName     = 1 [default = "TONEJAMOFF"];
+    optional int32 targetID     = 2 [default = -1];
+}
+
+////
+// Zap - Set Zap using a specific platform or target ID
+message Zap
+{
+    optional string msgName     = 1 [default = "ZAP"];
+    optional int32 targetID     = 3 [default = -1];
+    optional string platform    = 2 [default = "NONE"];
+}
+
+////
+// ZapOff - Turn off a specific Zap Off
+message ZapOff
+{
+    optional string msgName     = 1 [default = "ZAPOFF"];
+    optional int32 targetID     = 2 [default = -1];
+}
+
+
+
+////
+// Detect - Send a detection message to Zapper
+message Detect
+{
+    optional string msgName     = 1 [default = "DETECT"];
+    optional string platform    = 2 [default = "NONE"];
+    optional double freq        = 3 [default = 2440.0];
+}
+
+////
+// ZapperOptions - Send a string of options for defeat
+message ZapperOptions
+{
+    optional string msgName     = 1 [default = "ZAPPEROPTIONS"];
+    optional string options     = 2 [default = "NONE"];
+    optional int32 targetID     = 3 [default = -1];
+}
+
+////
+// ZapPing - Just a Ping
+message ZapPing
+{
+    optional string msgName     = 1 [default = "ZAPPING"];
+}
+
+////
+// ZapPong - Just a Pong
+message ZapPong
+{
+    optional string msgName     = 1 [default = "ZAPPONG"];
+}
+
+////
+// InfoMsg - Send a string of options for defeat
+message InfoMsg
+{
+    optional string msgName     = 1 [default = "INFOMSG"];
+    optional string info        = 2 [default = "NONE"];
+}
+

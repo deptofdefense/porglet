@@ -1,0 +1,31 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_rxdataplane;
+
+message RXDataPlaneConfig{
+    optional string msgName = 1 [default = "service_rxdataplane.RXDataPlaneConfig"];
+    // Length of queue for each dataplane product message
+    repeated string products = 2;
+}
+
+// How the product should be generated
+enum implementationTypes{
+         GPP = 1; // General Purpose Processor
+         GPU = 2; // Graphics Card
+         FPGA = 3; // FPGA (typically on-board the SDR)
+}
+
+message GPPConfigInfo{
+      optional string msgName = 1 [default = "service_rxdataplane.GPPConfig"];
+      optional int32 threads = 2 [default = 2];
+}
+
+message IQIngestFilter{
+   optional string msgName = 1 [default = "service_rxdataplane.IQIngestFilter"];
+   optional double minFreqHz = 2 [default = 30000000];
+   optional double maxFreqHz = 3 [default = 6000000000];
+   optional double fixedSampleRate = 4[default = 0];
+}

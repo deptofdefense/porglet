@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package common;
+
+message KeyValue
+{
+    optional string key = 1;
+    optional string value = 2;
+}

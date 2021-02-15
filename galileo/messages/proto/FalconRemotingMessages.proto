@@ -1,0 +1,974 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package for remoting.  These are send to and
+// from the Falcon Vision service and can be used by the GUI.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+//
+//
+//
+package falcon_remoting_msg;
+
+// Include message types from other files
+import "FalconCommonMessages.proto";
+import "FalconTriggerMessages.proto";
+import "FalconExternalsMessages.proto";
+////
+// Status report messages from processing macros.  This is translated
+// between the Falcon Vsion INFOREPT, WARNREPT and ERRREPT messages.
+//
+// msgName: STATUS_REPORT, used to identify the message
+// channel: Channel number from the receiver config
+// level: Log level of the remoting log message
+// message: Content of the message (limited to 80 characters due to X-Midas)
+message StatusReport
+{
+  enum LogLevel {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+  }
+
+  optional string   msgName = 1 [default = "STATUS_REPORT"];
+  optional int32    channel = 2;
+  optional LogLevel level   = 3;
+  optional string   message = 4;
+}
+
+////
+// This message is sent to the Remoting group when any BLACKLIST_REQUEST or
+// INTERCEPT trigger is handled.
+//
+// msgName: BLACKLIST_STATUS, used to identify the message
+// entries: List of entries into the blacklist (BlacklistEntry messages)
+message BlacklistStatus
+{
+  optional string msgName = 1 [default = "BLACKLIST_STATUS"];
+  repeated falcon_common_msg.BlacklistEntry entries = 2;
+}
+
+////
+// This message is sent to the Remoting group when any INTERCEPT_LIST_REQUEST
+// or INTERCEPT trigger is handled.
+//
+// msgName: INTERCEPT_LIST_STATUS, used to identify the message
+// entries: List of entries into the intercept list (Intercept messages)
+message InterceptListStatus
+{
+  optional string msgName = 1 [default = "INTERCEPT_LIST_STATUS"];
+  repeated falcon_trigger_msg.Intercept entries = 2;
+}
+
+message ExternalsHitListStatus
+{
+  optional string msgName = 1 [default = "EXTERNALS_HIT_LIST_STATUS"];
+  repeated falcon_externals_msg.ExternalsHit entries = 2;
+}
+////
+// This message is sent to the GlobalSignalList group when any GLOBAL_SIGNAL_LIST_REQUEST
+// is handled.
+//
+// msgName: GLOBAL_SIGNAL_LIST_STATUS, used to identify the message
+// entries: List of entries into the intercept list (Intercept messages)
+message GlobalSignalListStatus
+{
+  optional string msgName = 1 [default = "GLOBAL_SIGNAL_LIST_STATUS"];
+  optional int32  feed_id = 2;
+}
+
+
+////
+// Send the channel status to remoting.  This is translated between the
+// Falcon Vision CHANST message.
+//
+// msgName: STATUS_CHANNEL, used to identify the message
+// appID: Application ID
+// status: Current status of the channel
+// scrypt: Name of the scrypt file being run
+message StatusChannel
+{
+  enum Status {
+    DISABLED = -3;
+    OPEN = -2;
+    LAUNCHING = -1;
+    CRASHED = 0;
+    IDLE = 1;
+    SEARCHING = 2;
+    PROCESSING = 3;
+  }
+
+  optional string msgName = 1 [default = "STATUS_CHANNEL"];
+  optional int32  appID   = 2;
+  optional Status status  = 3;
+  optional string scrypt  = 4;
+}
+
+
+////
+// Report the health status of a channel.
+// Falcon Vision HEALST message.
+//
+// msgName: HEALTH_STATUS, used to identify the message
+// channel: Channel number from the receiver config
+// pic:
+// uniqrxid: Unique id from the receiver config
+message HealthStatus
+{
+  optional string msgName     = 1 [default = "HEALTH_STATUS"];
+  optional int32  channel     = 2;
+  optional string pic         = 3 [default = "NO_PIC"];
+  optional string ntp         = 4 [default = "F"];
+  optional string mhz         = 5 [default = "F"];
+  optional string pps         = 6 [default = "F"];
+  optional string serial      = 7 [default = "F"];
+  optional string rx          = 8 [default = "F"];
+  optional string raid        = 9 [default = "F"];
+  optional string disabled    = 10 [default = "UNKNOWN"];
+  optional int32  ssid        = 11;
+  optional string uniqrxid    = 12;
+}
+
+////
+// Report the health status messages to remoting
+//
+// msgName: HEALTH_MESSAGE, used to identify the message
+// description: The thing that has status
+// code: The code level
+// status: The status
+// type: Someone wants to specify type
+// timestamp: Time of message as %Y%m%d%H%M%%S.%f
+message HealthMessage
+{
+  enum Code {
+    OK = 0;
+    WARNING = 1;
+    CRITICAL = 2;
+    UNKNOWN = 3;
+  }
+
+  optional string msgName     = 1 [default = "HEALTH_MESSAGE"];
+  optional string description = 2;
+  optional Code   code        = 3;
+  optional string status      = 4;
+  optional string type        = 5 [default = "Functional"];
+  optional string timestamp   = 6;
+}
+
+////
+// HealthTest message for sending out the status of the health test
+//
+// msgName: HEALTH_TEST, used to identify the message
+// status: status of the test
+message HealthTest
+{
+  enum Status {
+    FAILURE = -1;
+    RUNNING = 0;
+    COMPLETED = 1;
+    QUERY = 2;
+  }
+  optional string msgName = 1 [default = "HEALTH_TEST"];
+  optional Status status  = 2;
+}
+
+////
+// A new signal has been locked or signal down.  This provides information
+// about the active event IDs.
+//
+// msgName: SIGNAL_EVENT, used to identify the message
+// channel: Channel number from the receiver config
+// eventType: Type of signal event (SIGUP or SIGDOWN)
+// eventID: Event ID set by the processing macro
+// timestamp: Time format YYYY:MM:DD::HH:MM:SS from UPTIME or DNTIME
+// soiNum: The message SOI parameter
+// rfMHz: If SIGUP, the RFMHZ parameter
+// subcarMHz: If SIGUP, the SCMHZ parameter
+// excurKHz: If SIGUP, the EXKHZ parameter
+// appID: Application ID
+// antNum: Antenna number in switch (port number)
+// antAz: Antenna Azimuth for detection
+// antEl: Antenna Elevation for detection
+// globalID: UUID for signal
+// exportPort: If there is an export port, this is it
+message SignalEvent
+{
+  enum Type {
+    SIGDET     = 0;
+    SIGUP      = 1;
+    SIGDOWN    = 2;
+    SIGTIMEOUT = 3;
+  }
+
+  optional string msgName    = 1 [default = "SIGNAL_EVENT"];
+  optional int32  channel    = 2;
+  optional Type   eventType  = 3;
+  optional string eventID    = 4;
+  optional string timestamp  = 5;  // UPTIME or DNTIME
+  optional string soiNum     = 6;
+  optional float  rfMHz      = 7;
+  optional float  subcarMHz  = 8;
+  optional float  excurKHz   = 9;
+  optional int32  appID      = 10;
+  optional int32  antNum     = 11;
+  optional float  antAz      = 12 [default = 0];
+  optional float  antEl      = 13 [default = 0];
+  optional string globalID   = 14;
+  optional string scrypt     = 15;
+  optional int32 exportPort  = 16;
+  optional string eltex      = 17;
+  optional float bwMHz       = 18;
+  optional string sensorName = 19 [default = ""];
+  optional falcon_externals_msg.ExternalsHit externals = 20;
+  optional falcon_externals_msg.InternalsHit internals = 21;
+}
+
+////
+// Report the GPS position from a signal.  This is translated between the
+// Falcon Vision SP_META message.
+//
+// msgName: GPS_POSITION, used to identify the message
+// channel: Channel number from the receiver config
+// eventID: Event ID set by the processing macro
+// latitude: Latitude position of the emitter
+// longitude: Longitude position of the emitter
+// altitude: Altitude of the emitter
+// wpLatitude: Waypoint latitude position of the emitter
+// wpLongitude: Waypoint longitude position of the emitter
+// velocity: Current velocity of the emitter
+// bearing: Current bearing of the emitter
+// timestamp: Timestamp of the GPS point
+// seqnum: Sequence number for GPS ordering
+// soi: SOI enumeration from the SIGUP_SOI message
+// isPrediction: True/False for if the point is a prediction
+// major:
+// minor:
+// vector:
+// antNum: Antenna number in switch (port number)
+// antAz: Antenna Azimuth for detection
+// antEl: Antenna Elevation for detection
+// globalID: UUID for signal
+// appID: Application ID
+message GPSPosition
+{
+  optional string msgName      = 1 [default = "GPS_POSITION"];
+  optional int32  channel      = 2;
+  optional string eventID      = 3;
+  optional float  latitude     = 4;
+  optional float  longitude    = 5;
+  optional float  altitude     = 6;
+  optional float  wpLatitude   = 7;
+  optional float  wpLongitude  = 8;
+  optional float  velocity     = 9;
+  optional float  bearing      = 10;
+  optional string timestamp    = 11;
+  optional float  seqnum       = 12;
+  optional string soi          = 13;
+  optional bool   isPrediction = 14 [default = false];
+  optional float  major        = 15 [default = 0];
+  optional float  minor        = 16 [default = 0];
+  optional float  vector       = 17 [default = 0];
+  optional int32  antNum       = 18;
+  optional float  antAz        = 19 [default = 0];
+  optional float  antEl        = 20 [default = 0];
+  optional string globalID     = 21;
+  optional int32  appID        = 22;
+  optional string sensorName   = 23;
+}
+
+////
+// Report the metadata for a macro (POF, etc).  This is translated between the
+// Falcon Vision SP_META2 message.
+//
+// msgName: METADATA_POF, used to identify the message
+// channel: Channel number from the receiver config
+// eventID: Event ID set by the processing macro
+// pof: POF status content
+// mode: POF mode value
+// seqnum: Sequence number for GPS ordering
+// soi: SOI enumeration from the SIGUP_SOI message
+// antNum: Antenna number in switch (port number)
+// antAz: Antenna Azimuth for detection
+// antEl: Antenna Elevation for detection
+// globalID: UUID for signal
+// appID: Application ID
+message MetadataPOF
+{
+  optional string msgName  = 1 [default = "METADATA_POF"];
+  optional int32  channel  = 2;
+  optional string eventID  = 3;
+  optional int32  pof      = 4;
+  optional int32  mode     = 5;
+  optional int32  seqnum   = 6;
+  optional string soi      = 7;
+  optional int32  antNum   = 8;
+  optional float  antAz    = 9 [default = 0];
+  optional float  antEl    = 10 [default = 0];
+  optional string globalID = 11;
+  optional int32  appID    = 12;
+}
+
+////
+// Report the Key Value Pair metadata.  This is translated from the
+// FV_KVP midas message
+//
+// msgName: KVP_METADATA, used to identify the message
+// eventID: Event ID, pulled from the midas message
+// key: Key pulled from the midas message
+// value: Value pulled from the midas message
+// update: Update time for the extracted KVP
+// seqnum: Sequence number for file ordering
+// globalID: UUID for signal
+// appID: Application ID
+message KVPMetaData
+{
+    optional string msgName  = 1 [default = "KVP_METADATA"];
+    optional string eventID  = 2;
+    repeated string key      = 3;
+    repeated string value    = 4;
+    optional float  update   = 5;
+    optional int32  seqnum   = 6;
+    optional string globalID = 7;
+    optional int32  appID    = 8;
+}
+
+////
+// Report the Waypoint metadata.  This is translated from the
+// FV_WAYPT midas message
+//
+// msgName: WAYPOINT_METADATA, used to identify the message
+// eventID: Event ID, pulled from the midas message
+// waypointID: Waypoint ID
+// lat: Waypoint Latitude
+// lon: Waypoint Longitude
+// alt: Waypoint Altitude
+// update: Update time for extracted Waypoint
+// seqnum: Sequence number for file ordering
+// globalID: UUID for signal
+// appID: Application ID
+message WaypointMetaData
+{
+    optional string msgName    = 1 [default = "WAYPOINT_METADATA"];
+    optional string eventID    = 2;
+    optional float  waypointID = 3;
+    optional float  lat        = 4;
+    optional float  lon        = 5;
+    optional float  alt        = 6;
+    optional float  update     = 7;
+    optional int32  seqnum     = 8;
+    optional string globalID   = 9;
+    optional int32  appID      = 10;
+}
+
+////
+// Report the ground point metadata.  This is translated from the
+// FV_GNDPT midas message
+//
+// msgName: GNDPOINT_METADATA, used to identify the message
+// eventID: Event ID, pulled from the midas message
+// pointID: Point ID
+// lat: Point Latitude
+// lon: Point Longitude
+// alt: Point Altitude
+// update: Update time for extracted point
+// seqnum: Sequence number for file ordering
+// globalID: UUID for signal
+// appID: Application ID
+message GndpointMetaData
+{
+    optional string msgName  = 1 [default = "GNDPOINT_METADATA"];
+    optional string eventID  = 2;
+    optional string  pointID = 3;
+    optional float  lat      = 4;
+    optional float  lon      = 5;
+    optional float  alt      = 6;
+    optional float  update   = 7;
+    optional int32  seqnum   = 8;
+    optional string globalID = 9;
+    optional int32  appID    = 10;
+}
+
+////
+// Handle MSGPASS and MSGFAIL from the channel
+//
+// msgName: REMOTE_MESSAGE, used to identify the message
+// msgPass: MSGPASS=true, MSGFAIL=false
+// format: String format for the content
+// content: String representations of each field, where message name is first
+// msgID: Message ID field
+message RemoteMessage
+{
+  optional string msgName = 1 [default = "REMOTE_MESSAGE"];
+  optional bool   msgPass = 2 [default = true];
+  optional string format  = 3;
+  repeated string content = 4;
+  optional double msgID   = 5;
+}
+
+////
+// Nmea Parser Primitive parses a gps server for lat,lon,heading.
+// msgName: GPS_PLAT_POS, used to indentify the message
+// latidue: lat of the platform
+// longitude: long of the platform
+// heading: heading of the platform
+message GPSPlatPos
+{
+  optional string msgName   = 1 [default = "GPS_CURRENT_POSITION"];
+  optional float  latitude  = 2;
+  optional float  longitude = 3;
+  optional float  heading   = 4;
+}
+
+////
+// Message to request PSD for a specific archive file
+//
+// msgName: REQUEST_PSD, used to identify the message
+// resID: Resource ID of the receiver
+// archiveNum: Archive number
+// returnChan: Return channel number for activeMQ topic
+message RequestPsd
+{
+  optional string msgName    = 1 [default = "REQUEST_PSD"];
+  optional string resID      = 2;
+  optional int32  archiveNum = 3;
+  optional int32  returnChan = 4;
+}
+
+////
+//  Sets up automatic or manual attenution
+//
+//  msgName: SET_ATTEN
+//  appID: ID number of the application
+//  autoAtten: On or Off
+//  atten: Attenuation number
+message SetAtten
+{
+  enum AutoAtten {
+    OFF = 1;
+    ON  = 2;
+  }
+  optional string    msgName   = 1 [default = "SET_ATTEN"];
+  optional int32     appID     = 2;
+  optional AutoAtten autoAtten = 3;
+  optional int32     atten     = 4;
+}
+
+
+////
+//  Performs start, pause, step forward, step backward commands for search
+//
+//  msgName: SEARCH_CONTROL
+//  appID: ID number of the application
+//  action: Start, pause, step forward, or step backward
+message SearchControl
+{
+  enum Action {
+    START = 1;        //1 in SRAC
+    PAUSE = 2;        //2 in SRAC
+    STEPFORWARD = 3;  //1 in SRSP
+    STEPBACKWARD = 4; //2 in SRSP
+  }
+  optional string msgName = 1 [default = "SEARCH_CONTROL"];
+  optional int32  appID   = 2;
+  optional Action action  = 3;
+}
+
+////
+//  Tune to specified frequency
+//
+//  msgName: FREQUENCY_TUNE
+//  appID: ID number of the application
+//  freq: Frequency in MHz to tune to
+message FrequencyTune
+{
+  optional string msgName = 1 [default = "FREQUENCY_TUNE"];
+  optional int32  appID   = 2;
+  optional float  freq    = 3;
+}
+
+////
+//  Start/Stop pre-d
+//
+//  msgName: PRED_RECORD
+//  appID: ID number of the application
+//  predRecord: Start or Stop recording pre-d
+message PredRecord
+{
+  enum Action {
+    START = 1;
+    STOP = 2;
+  }
+  optional string msgName    = 1 [default = "PRED_RECORD"];
+  optional int32  appID      = 2;
+  optional Action predRecord = 3;
+}
+
+////
+//  Sets length of snapshot and takes snapshot
+//
+//  msgName: PRED_SNAP
+//  appID: ID number of the application
+//  snapLength: Number of seconds for snapshot
+//  takeSnap: True or false
+message PredSnap
+{
+  optional string msgName    = 1 [default = "PRED_SNAP"];
+  optional int32  appID      = 2;
+  optional int32  snapLength = 3;
+  optional bool   takeSnap   = 4;
+}
+
+////
+//  Turns on or off automatic video sync,
+//  starts or stops video recording,
+//  sets video integration values,
+//  and adjusts jpeg capture settings
+//
+//  msgName: VIDEO_CONTROL
+//  appID: ID number of the application
+//  videoRecord: Start or stop recording
+//  videoSync: On or off
+//  videoIntegration: Integration number
+//  jpegCommand: disable, continuous, snapshot
+//  jpegRate: Number for the jpeg rate
+message VideoControl
+{
+  enum Record {
+    START = 1;
+    STOP = 2;
+  }
+  enum Sync {
+    OFF = 1;
+    ON = 2;
+  }
+  enum Mode {
+    DISABLE = 1;
+    CONTINUOUS = 2;
+    SNAPSHOT = 3;
+  }
+  optional string msgName          = 1 [default = "VIDEO_CONTROL"];
+  optional int32  appID            = 2;
+  optional Record videoRecord      = 3;
+  optional Sync   videoSync        = 4;
+  optional int32  videoIntegration = 5;
+  optional Mode   jpegCommand      = 6;
+  optional int32  jpegRate         = 7;
+}
+
+
+////
+//  Turns on or off automatic video sync,
+//  starts or stops video recording,
+//  sets video integration values,
+//  and adjusts jpeg capture settings
+//
+//  msgName: FHOP_SETTINGS
+//  appID: ID number of the application
+//  freqHopMode: Automatic, User clicks, Manually enter, reset
+//  tunerLock: Message sent to lock or unlock a specific tuner
+//  tunerFreq: Freq for the next tuner
+message FhopSettings
+{
+  enum FreqHopMode {
+    AUTOMATIC = 1;      //1-3 from FHDM, same numbers
+    USER_CLICKS = 2;
+    MANUALLY_ENTER = 3;
+    RESET = 4;              //from RHOP, no number sent
+  }
+  optional string      msgName     = 1 [default = "FHOP_SETTINGS"];
+  optional int32       appID       = 2;
+  optional FreqHopMode freqHopMode = 3;
+  repeated TunerLock   tunerLock   = 4;
+  repeated float       tunerFreq   = 5;
+}
+
+////
+//  Message sent to lock or unlock a specific tuner
+//
+//  tuner: Tuner number
+//  lock:  true(lock it) or false(unlock it)
+message TunerLock
+{
+  optional int32 tuner = 1;
+  optional bool  lock  = 2;
+}
+
+////
+// Send the current antenna scan and tracking status.  The is sent to the
+// Remoting messaging group from the Apps.
+//
+// msgName: ANTENNA_SCAN_STATUS, used to identify the message
+// appID: Application ID
+// scanStatus: Current scanning status of the App
+// trackStatus: Current track status of the App
+// minScanAngle: minimum angle for scanning
+// maxScanAngle: maximum angle for scanning
+message AntennaScanStatus
+{
+  enum ScanStatus {
+    STANDBY = 0;
+    SCANNING = 1;
+    ENERGY = 2;
+    TRACKING = 3;
+    MOVING = 4;
+  }
+  enum TrackStatus {
+    OFF = 0;
+    ON = 1;
+  }
+  optional string       msgName       = 1 [default = "ANTENNA_SCAN_STATUS"];
+  optional int32        appID         = 2;
+  optional ScanStatus   scanStatus    = 3 [default = STANDBY];
+  optional TrackStatus  trackStatus   = 4 [default = OFF];
+  optional float        minScanAngle  = 5;
+  optional float        maxScanAngle  = 6;
+}
+
+
+////
+// Message to query MidasAppStatus.
+//
+// msgName: QUERY_MIDAS_APP_STATUS, used to identify the message
+// appID: ID of the app to query
+message QueryMidasAppStatus
+{
+    optional string msgName = 1 [default = "QUERY_MIDAS_APP_STATUS"];
+    optional int32  appID   = 2;
+}
+
+////
+// Message that will hold all possible Midas Application Status.  This is sent
+// to the Remoting messaging group from XMidasApps
+//
+// msgName: MIDAS_APP_STATUS, used to identify the message
+// appID: Application ID
+// rxStat: RxStatus message containing the receiver status
+// recStat: RecordingStatus message containing the pred recording status
+// sigStat: SignalStatus message containing info on the signal
+// vidStat: VideoStatus message containing the video status
+// fhStat: FreqHopStatus message containing the freq hop info
+// searchStat: Enumerated search setting
+// threshold: Search threshold value
+message MidasAppStatus
+{
+  enum SearchSetting {
+    SEARCHING = 1;
+    PAUSED = 2;
+  }
+  optional string           msgName    = 1 [default = "MIDAS_APP_STATUS"];
+  optional int32            appID      = 2;
+  optional RxStatus         rxStat     = 3;
+  optional RecordingStatus  recStat    = 4;
+  optional SignalStatus     sigStat    = 5;
+  optional VideoStatus      vidStat    = 6;
+  optional FreqHopStatus    fhStat     = 7;
+  optional SearchSetting    searchStat = 8;
+  optional SpecialG         specialG   = 9;
+  optional float            threshold  = 10;
+  optional bool             skyScraperProduct = 11;
+}
+
+//message SpecialG
+//{
+//  optional float latitude  = 1;
+//  optional float longitude = 2;
+//  optional float altitude  = 3;
+//  optional float estAlt    = 4;
+//  optional bool  enable    = 5;
+//}
+
+////
+// Message that contains the receiver status. This is used by MidasAppStatus
+//
+// freq: Tuned freq for the receiver
+// atten: Amount of attenuation currently set
+// autoAtten: Enumerated on/off setting
+message RxStatus
+{
+  enum Status {
+    AUTOMATIC = 2;
+    MANUAL = 1;
+  }
+  optional float  freq       = 1;
+  optional int32  atten      = 2;
+  optional Status autoAtten  = 3;
+}
+
+////
+// Message that contains the recording status. This is used by MidasAppStatus
+//
+// predRecStat: Enumerated status for on/off pred recording
+// diskUse: Percentage of the disk used.
+message RecordingStatus
+{
+  enum Status {
+    OFF = 0;
+    ON = 1;
+  }
+  optional Status predRecStat    = 1;
+  optional float  diskUse        = 2;
+}
+
+////
+// Message that contains the signal status. This is used by MidasAppStatus
+//
+// detStat: List of DetectionStatus messages
+// ber: BER of the current signal
+// packetCount:     Total number of packets extracted
+// timeWindow:      Duration of packet collection
+// timeStamp:       Time (ms) at end of collection
+// centerFreqEst:   Center frequency estimate
+// excurEst: Excursion estimate
+message SignalStatus
+{
+  repeated DetectionStatus detStat       = 1;
+  optional float           ber           = 2;
+  optional float           centerFreqEst = 3;
+  optional float           excurEst      = 4;
+  optional int32           packetCount   = 5;
+  optional int32           timeWindow    = 6;
+  optional int64           timeStamp     = 7;
+}
+
+////
+// Message that contains detection status. This is used by SignalStatus
+//
+// sigName: string of the signal name
+// detState: string of the detection state
+// color: Enumerated color for the detection string
+message DetectionStatus
+{
+  enum Color {
+    RED = 1;
+    YELLOW = 2;
+    GREEN = 3;
+  }
+  optional string sigName  = 1;
+  optional string detState = 2;
+  optional Color  color    = 3;
+}
+
+////
+// Message that contains FAST status.
+//
+// msgName: SEARCH_STATUS, used to identify the message
+// appID: Application ID
+// searchState: string of the search state
+// color: Enumerated color for the search string
+message SearchStatus
+{
+  enum Color {
+    RED = 1;
+    YELLOW = 2;
+    GREEN = 3;
+  }
+  optional string msgName = 1 [default = "SEARCH_STATUS"];
+  optional int32  appID  = 2;
+  optional string status = 3;
+  optional Color  color  = 4;
+}
+
+////
+// Message that contains video status. This is used by MidasAppStatus
+//
+// vidSync: Enumerated sync status ON/OFF
+// vidInt: Value of the video integration
+// jpegMode: Enumerated mode of the JPEG setting
+// jpegRate: Rate of jpeg capture
+message VideoStatus
+{
+  enum RecStatus {
+    VID_OFF = 0;
+    VID_ON = 1;
+  }
+  enum SyncStatus {
+    SYNC_OFF = 1;
+    SYNC_ON = 2;
+  }
+  enum JpegMode {
+    JPEG_OFF = 1;
+    JPEG_ON = 2;
+    JPEG_SINGLE = 3;
+  }
+
+  optional RecStatus   vidRecStat = 1;
+  optional SyncStatus  vidSync    = 2;
+  optional int32       vidInt     = 3;
+  optional JpegMode    jpegMode   = 4;
+  optional int32       jpegRate   = 5;
+}
+
+////
+// Message that contains Frequency Hop Status. This is used by MidasAppStatus
+//
+// mode: Enumerated mode
+// fhopTuner: List of FreqHopTunerStatus messages
+message FreqHopStatus
+{
+  enum Mode {
+    AUTOMATIC = 1;
+    USER_CLICKS = 2;
+    MANUAL = 3;
+  }
+  optional Mode               mode      = 1;
+  repeated FreqHopTunerStatus fhopTuner = 2;
+}
+
+////
+// Message that contains the Freq Hop Tuner State. This is used by FreqHopStatus
+//
+// tuner: Tuner number
+// freq: Hop tuner frequency
+// numHits: Number of hits for this tuner
+// locked: True/False for if this tuner is locked
+message FreqHopTunerStatus
+{
+  optional int32 tuner   = 1;
+  optional double freq   = 2;
+  optional int32 numHits = 3;
+  optional bool  locked  = 4;
+}
+
+////
+// Name: SPEC_EVENT
+// Message that contains the new spec event parameters
+//
+// lat1: Latitutde 1
+// lon1: Longitude 1
+// alt1: Altitude 1
+// alt2: Altitude 2
+message SpecialG
+{
+    optional string msgName = 1 [default = "PROCESS_SPECIAL_G"];
+    optional double lat     = 2;
+    optional double lon     = 3;
+    optional double alt     = 4;
+    optional double estAlt  = 5;
+    optional bool   enable  = 6;
+}
+
+
+////
+// Message to return the gps location of a sensor in a network of sensors
+//   other information about the rx sensor is included
+message SensorPosition
+{
+
+  optional string           msgName              = 1 [default = "SENSOR_POSITION"];
+  optional float            lat                  = 2;
+  optional float            lon                  = 3;
+  optional float            alt                  = 4;
+  optional OrientationStatus orientation         = 5;
+  optional int64            timestamp            = 6;
+  optional string           sensorName           = 7;
+  optional string           siteId               = 8;
+  optional string           sigAd                = 9;
+  repeated FieldofView      fov                  = 10;
+
+}
+
+message SensorHealth
+{
+
+    optional string            msgName              = 1 [default = "SENSOR_HEALTH"];
+    optional string            sensorName           = 2;
+    optional int32             pollTime             = 3;
+    optional int32             averageCount         = 4;
+    optional float             cpuUsage             = 5;
+    optional float             cpuAverage           = 6;
+    optional float             ramUsage             = 7;
+    optional float             ramAverage           = 8;
+    optional float             diskUsage            = 9;
+    optional float             diskAverage          = 10;
+    optional float             cpuTempAvg           = 11;
+    optional float             cpuTempMin           = 12;
+    optional float             cpuTempMax           = 13;
+
+}
+
+
+message HardwareStatus
+{
+
+  optional string           msgName              = 1 [default = "HARDWARE_STATUS"];
+  optional string           IPAddress            = 2;
+  optional string           sensorName           = 3;
+  optional float            cpuAvgTemp           = 4;
+  repeated float            cpuHighTemp          = 5;
+  optional float            cpuIdlePercent       = 6;
+  optional float            ramUsagePercent      = 7;
+  optional bool             online               = 8;
+  optional string           deviceType           = 9;
+
+}
+
+// Message to send out the Sensor Health parameters
+//  Modeled after the MachineUtilization message in
+//  rf-control ResourceMessages.proto
+//
+// msgName: MACHINE_UTILIZATION, used to identify the message
+// pollTime: How often are the stats requested (in milliseconds)
+// averageCount: How many measurements are used in the average
+// cpuUsage: Current CPU Usage percentage
+// cpuAverage: Average CPU usage for the pollTime*averageCount time
+// ramUsage: Current RAM usage percentage
+// ramAverage: Average RAM usage for the pollTime*averageCount time
+// diskUsage: Current hard disk usage percentage
+// diskAverage: Average hard disk usage for the pollTime*AverageCount time
+// cpuTempAvg: Average CPU temp for all CPUs in Centigrade
+// cpuTempMin: Minimum CPU temp from all CPUs in Centigrade
+// cpuTempMax: Maximum CPU temp from all CPUs in Centigrade
+message SensorStatus
+{
+    optional string            msgName              = 1 [default = "SENSOR_STATUS"];
+    optional SensorHealth      sensor_health        = 2;
+    repeated ReceiverStatus    rx_status            = 3;
+    optional SensorPosition    sensor_position      = 4;
+}
+
+
+////
+// For some of our sensors, the sensors move and have an orientation
+//   Yaw, Roll, Pitch, and Heading are all in degrees
+//   Speed is in Knots
+message OrientationStatus
+{
+  optional string msgName = 1 [default = "ORIENTATION_STATUS"];
+  optional float yaw = 2;
+  optional float roll = 3;
+  optional float pitch = 4;
+  optional float heading = 5;
+  optional float speed = 6;
+}
+
+message ReceiverStatus
+{
+
+  enum GainMode{
+    AGC = 0;
+    MANUAL = 1;
+  }
+
+  optional string           msgName              = 1 [default = "RECEIVER_STATUS"];
+  optional int32            idNum                = 2;
+  optional string           name                 = 3;
+  optional string           type                 = 4;
+  optional float            rxFreq               = 5;
+  optional float            rxBandwidth          = 6;
+  optional int32            gain                 = 7;
+  optional GainMode         gainMode             = 8;
+}
+
+message FieldofView
+{
+  optional float boreSite  = 1;
+  optional float azimuth   = 2;
+  optional float elevation = 3;
+  optional float beamWidth = 4;
+}

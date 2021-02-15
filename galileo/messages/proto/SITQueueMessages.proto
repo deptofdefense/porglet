@@ -1,0 +1,64 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package sit_queue_msg;
+
+
+message clusteringResults
+{
+   optional string msgName = 1 [default = "clusteringResults"];
+   required int32 clusterID = 2;
+   repeated double hopFreqs = 3;
+   required string lastDetectTime = 4;
+   required double lastDetectFreq = 5;
+   required string bestLibraryMatchName = 6;
+   required double bestLibraryMatchConfidence = 7;
+}
+
+////
+// Response to a request for frequency hopping detection
+/////
+message detectFhopResponse
+{
+    optional string msgName = 1 [default = "detectFhopResponse"];
+    required string requestID = 2;
+    required string iqSnap = 3;
+    repeated clusteringResults detectResults  = 4;
+}
+
+////
+// Response to an add2SoilistRequest
+/////
+message add2SoilistResponse
+{
+   optional string msgName = 1 [ default = "add2SoilistResponse" ];
+   required string requestID = 2;
+   required string sigAdded = 3;
+   required string targetIdentifier = 4;
+}
+
+////
+// Response to an add2SoilistRequest
+/////
+message generateJamFileResponse
+{
+   optional string msgName = 1 [ default = "generateJamFileResponse" ];
+   required string requestID = 2;
+   required int32 clusterID = 3;
+   required string jamFilePath = 4;
+}
+
+
+////
+// Response to a request for frequency hopping detection with nothing
+// passing the threshold
+/////
+message nullResponse
+{
+    optional string msgName = 1 [default = "nullResponse"];
+    required string requestID = 2;
+    required string requestMsgName = 3;
+}
+

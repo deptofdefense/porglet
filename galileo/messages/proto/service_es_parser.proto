@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepvisor";
+
+package service_es_parser;
+
+message ESParserConfig {
+  optional string msgName = 1 [default = "service_es_parser.ESParserConfig"];
+  optional string script = 2 [default = "None"];
+  optional string hostname = 3 [default = "local"]; 
+}

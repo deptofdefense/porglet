@@ -1,0 +1,79 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package galileo_msg;
+
+message Cluster
+{
+   optional string msgName = 1 [default = "CLUSTER"];
+   optional int32 incomingCID = 2;
+   optional int32 label = 3;
+   repeated int32 indices = 4;
+};
+
+////
+// Sent by galileo_process when new data has been processed
+////
+message ProcessorResults
+{
+    optional string msgName = 1 [default = "PROCESSOR_RESULTS"];
+    // UUID of processor instantance
+    optional string procInstanceID = 2;
+    // Hop Metafile
+    optional string metaFile = 3;
+    // I/Q Index File
+    optional string IQIndexFile = 4;
+    // Sub-graph File (For Visualization)
+    optional string subGraphFile = 5;
+    // List of potential clusters
+    repeated Cluster incomingClusters = 6; 
+    // Did Galileo use cyclo to cluster?
+    optional bool cycloDisabled = 7;
+    // Time Resolution (seconds)
+    optional double timeRes = 8;
+    // Frequency Resolution (Hz)
+    optional double freqRes = 9;
+    // Name of the energy burst segmenter
+    optional string segmenterName = 10;
+}
+
+message ClusterMapping{
+   optional string msgName = 1 [default = "CLUSTER_MAPPING"];
+   optional int32 incomingCID = 2 [default = 0];
+   optional string clusterID = 3 [default = ""];
+   optional bool newCluster = 4 [default = false]; 
+}
+message AggregatorResults
+{
+    optional string msgName = 1 [default = "AGGREGATOR_RESULTS"];
+    repeated ClusterMapping clusterMap = 2;
+    optional string procInstanceID = 3;
+}
+
+//////
+// Sent when someone wants to "learn" an emitter. In other words,
+// make an entry in knownEmitters for the clusterID specified.
+//////
+message LearnEmitter
+{
+   optional string msgName = 1 [default = "LEARN_EMITTER"];
+   optional string clusterID = 2 [default = ""];
+   optional string emitterName = 3 [default = "DEFAULT"];
+   optional string designation = 4 [default = "gray"];
+}
+
+message AggregatorStatus
+{
+   optional string msgName = 1 [default = "AGGREGATOR_STATUS"];
+   optional bool shouldExit = 2;
+   optional bool exited = 3;
+}
+
+message AggregatorClear
+{
+   optional string msgName = 1 [default = "AGGREGATOR_CLEAR"];
+   optional bool shouldClear = 2;
+   optional bool cleared = 3;
+}

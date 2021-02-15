@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+/* Network configuration for Service and the Infrastructure */
+
+package service_infrastructure;
+
+message NetworkLayout
+{
+    optional int64 base_port = 1 [default = 8080];
+    optional int64 infra_port_offset = 2 [default = 17];
+    optional int64 service_port_offset = 3 [default = 19];
+    optional int64 zpipe_port_offset = 4 [default = 27];
+    
+    // These ports are for testing with the simulator
+    optional int64 sub_port = 5 [default = 6686];
+    optional int64 pub_port = 6 [default = 5585];
+}

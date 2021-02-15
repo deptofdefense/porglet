@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+import "service_rxdataplane.proto";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_spectrogram;
+
+message SpectrogramConfig{
+    optional string msgName = 1 [default = "service_spectrogram.SpectrogramConfig"];
+    optional service_rxdataplane.IQIngestFilter IQFilter = 2;
+    // Length of queue for each dataplane product message
+    optional int32 fftLength = 3 [default = 4096];
+    optional int32 writeAux = 4 [default = 72];
+    optional int32 averages = 5 [default = 1];
+    optional service_rxdataplane.implementationTypes implementation = 6 [default = GPP];
+    optional service_rxdataplane.GPPConfigInfo GPPConfig = 7;
+}

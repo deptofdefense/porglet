@@ -1,0 +1,147 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package for remoting.  These are send to and
+// from the Falcon Vision service and can be used by the GUI.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_externals_msg;
+
+//timestamp (YYYY:MM:DD::HH:MM:SS)
+message ExternalsHit
+{
+  enum Type {
+    KNOWN_RED = 0;
+    KNOWN_GRAY = 1;
+    KNOWN_BLUE = 2;
+    UNKNOWN = 3;
+    ANOMALY = 4;
+  }
+
+  optional string           msgName           = 1 [default = "EXTERNALSHIT"];
+  optional string           name              = 2;
+  optional Type             threatType        = 3;
+  optional double           freqMHz           = 4;
+  optional string           globalId          = 5 [default = "Functional"];
+  optional int32            psuedoUniqueId    = 6 [default = 0];
+  optional int32            globalIdNum       = 7 [default = 0];
+  optional string           timestamp         = 8;
+  optional string           channel           = 9 [default = "1"];
+  optional bool             isTrigger         = 10 [default = false];
+  optional HopDescriptor    hopDescriptor     = 11;
+  optional FSKDescriptor    fskDescriptor     = 12;
+  optional CWDescriptor     cwDescriptor      = 13;
+  optional SpreadDescriptor spreadDescriptor  = 14;
+  optional AVDescriptor     AVidDescriptor    = 15;
+  optional DsssDescriptor   DsssDescriptor    = 16;
+  optional int32            updateValues      = 17 [default = 0];
+  optional string           soiNum            = 18 [default = "0"];
+}
+
+message InternalsHit
+{
+  optional string           msgName           = 1 [default = "INTERNALSHIT"];
+  optional string           name              = 2;
+  optional double           freqMHz           = 3;
+  optional string           globalId          = 4 [default = "Functional"];
+  optional int32            psuedoUniqueId    = 5 [default = 0];
+  optional int32            globalIdNum       = 6 [default = 0];
+  optional string           timestamp         = 7;
+  optional string           channel           = 8 [default = "1"];
+  optional bool             isTrigger         = 9 [default = false];
+  optional HopDescriptor    hopDescriptor     = 10;
+  optional FSKDescriptor    fskDescriptor     = 11;
+  optional CWDescriptor     cwDescriptor      = 12;
+  optional SpreadDescriptor spreadDescriptor  = 13;
+  optional AVDescriptor     AVidDescriptor    = 14;
+  optional DsssDescriptor   DsssDescriptor    = 16;
+  optional int32            updateValues      = 17 [default = 0];
+  optional string           soiNum            = 18 [default = "0"];
+}
+
+message DsssDescriptor{
+  optional string fileName    = 1;
+  optional int32  mode        = 2;
+}
+
+message HopDescriptor
+{
+  optional double hopRate          = 1;
+  optional double totalHopBW       = 2;
+  optional double indHopBW         = 3;
+  optional double hopDuration      = 4;
+  optional double hopPower         = 5;
+  optional int32  freqsUsedBlind   = 6;
+  optional int32  freqsUsedCorr    = 7;
+}
+
+message FSKDescriptor
+{
+  optional double centerFreq    = 1;
+  optional double excursion     = 2;
+  optional double baudRate      = 3;
+}
+
+message CWDescriptor
+{
+  optional double centerFreq   = 1;
+  optional double power        = 2;
+}
+
+message SpreadDescriptor
+{
+  optional double centerFreq   = 1;
+  optional double chipRate     = 2;
+  optional string modulation   = 3;
+  optional int32  pnSeqLength  = 4;
+  optional string polynomial   = 5;
+  optional string fill         = 6;
+}
+
+message AVDescriptor
+{
+  optional double centerFreq   = 1;
+  optional bool detected       = 2;
+}
+
+message QSTAT_RT
+{
+  optional string msgName   = 1 [default = "QSTAT_RT"];
+  optional string sender    = 2;
+  optional string status    = 3;
+  optional int32  appId     = 4;
+}
+
+message ExternalsRelease
+{
+  enum Type {
+    KNOWN_RED = 0;
+    KNOWN_GRAY = 1;
+    KNOWN_BLUE = 2;
+    UNKNOWN = 3;
+    ANOMALY = 4;
+  }
+
+  optional string           msgName           = 1 [default = "EXTERNALSRELEASE"];
+  optional string           name              = 2;
+  optional Type             threatType        = 3;
+  optional double           freqMHz           = 4;
+}
+
+// Can be sent by macros/procesors to indicate no signal they were looking for
+// was present in a given snapshot
+message NullHit
+{
+   optional string           msgName           = 1 [default = "NULLHIT"];
+   optional string           timestamp         = 2;
+   optional double           freqHz            = 3;
+   optional string           ramSnapID         = 4;
+   optional string           detectorName      = 5;
+}
+

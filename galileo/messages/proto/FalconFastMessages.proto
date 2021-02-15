@@ -1,0 +1,304 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package that replace existing Midas messages
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_fast_msg;
+
+////
+// Information about what antenna the app has been mapped to
+//
+// msgName: ANTENNA_MAP, used to identify the message
+// chan: Channel Number
+// ant: Antenna Number
+// mode: =1 if master, =0 if slave
+// slaved_to: Channel slaved to
+// min_freq: minimum frequency of antenna
+// max_freq: maximum frequency of antenna
+// type: Antenna Type (0:no_antenna, 1:rotor, 2:fixed, 2:omni, 2:slaved, 4:target) **There are multiple cases with the same value because FAST treats these cases the same
+// dwncnvt_lo: Frequency offset when using a downconverter
+// beamwidth: Antenna Beamwidth
+// ant_name: Name of the antenna
+// ant_angle: Angle at which the antenna is facing
+message AntennaMap
+{
+  optional string msgName   = 1 [default = "ANTENNA_MAP"];
+  optional int32 chan       = 2;
+  optional int32 ant        = 3;
+  optional int32 mode       = 4;
+  optional int32 slaved_to  = 5;
+  optional double min_freq  = 6;
+  optional double max_freq  = 7;
+  optional int32 type       = 8;
+  optional float dwncnvt_lo = 9;
+  optional float beamwidth  = 10;
+  optional string ant_name  = 11;
+  optional double ant_angle = 12;
+  optional double ant_el    = 13;
+}
+
+////
+// Information about what satellite the app has been mapped to
+//
+// msgName: SATELLITE_MAP, used to identify the message
+// chan: Channel Number
+// ant: Antenna Number
+// min_freq: minimum frequency of antenna
+// max_freq: maximum frequency of antenna
+// type: Antenna Type (0:no_antenna, 1:rotor, 2:fixed, 3:omni, 4:target)
+// dwncnvt_lo: Frequency offset when using a downconverter
+// satname: Name of the sat
+// ssc: SSC of the sat
+// band: Band of the sat
+// pol: Pol of the sat
+message SatelliteMap
+{
+  optional string msgName   = 1 [default = "SATELLITE_MAP"];
+  optional int32 chan       = 2;
+  optional int32 ant        = 3;
+  optional double min_freq  = 4;
+  optional double max_freq  = 5;
+  optional int32 type       = 6;
+  optional float dwncnvt_lo = 7;
+  optional string satname   = 8;
+  optional int32 ssc        = 9;
+  optional string band      = 10;
+  optional string pol       = 11;
+}
+
+////
+// Ready for new scan
+//
+// msgName: SEARCH_TOP, used to identify the message
+message SearchTop
+{
+  optional string msgName   = 1 [default = "SEARCH_TOP"];
+}
+
+////
+// Start of new search
+//
+// msgName: START_SCAN, used to identify the message
+message StartScan
+{
+  optional string msgName   = 1 [default = "START_SCAN"];
+}
+
+////
+// Start/Stop Scan
+//
+// msgName: SRAC, used to identify the message
+// chan: Channel Number
+// action: 1 to start, 2 to stop
+message SRAC
+{
+  optional string msgName   = 1 [default = "SRAC"];
+  optional int32 chan       = 2;
+  optional int32 action     = 3;
+}
+
+////
+// Query Status
+//
+// msgName: QSTAT, used to identify the message
+// status: 1 for idle, 2 for scanning, 3 for processing
+message QSTAT
+{
+  optional string msgName   = 1 [default = "QSTAT"];
+  optional int32 status     = 2;
+}
+
+////
+// Query Position Status
+//
+// msgName: QUERY_POSIST, used to identify the message
+message QueryPosist
+{
+  optional string msgName   = 1 [default = "QUERY_POSIST"];
+}
+
+////
+// Position Status
+//
+// msgName: POSIST, used to identify the message
+// chan: Channel Number
+// azimuth: Azimuth
+// elevation: Elevation
+// velocity: Velocity
+message Posist
+{
+  optional string msgName   = 1 [default = "POSIST"];
+  optional int32  chan      = 2;
+  optional float  azimuth   = 3;
+  optional float  elevation = 4;
+  optional float  velocity  = 5;
+}
+
+////
+// Update SOIList
+//
+// msgName: UPDATE_SOILIST, used to identify the message
+message UpdateSOIList
+{
+  optional string msgName   = 1 [default = "UPDATE_SOILIST"];
+}
+
+////
+// This is a component message, do not send it by itself.
+// It is a part of UpdateSignals.
+// There is just one freq range grouping per message.
+//
+// msgName: UPDATE_SIGNAL, used to identify the message
+// startFreq: start freq for this search range
+// stopFreq: stop freq for this search range
+// stepFreq: step freq in the range
+// dwell: dwell
+// threshold: threshold
+message UpdateSignal
+{
+  optional string msgName = 1 [default = "UPDATE_SIGNAL"];
+  optional double startFreq = 2;
+  optional double stopFreq = 3;
+  optional double stepFreq = 4;
+  optional double dwell = 5 [default = -1.0];
+  optional double threshold = 6 [default = 4.0];
+}
+
+////
+// Update Fast's Signal/Frequency list
+//
+// msgName: UPDATE_SIGNALS, used to identify the message
+message UpdateSignals
+{
+  optional string msgName = 1 [default = "UPDATE_SIGNALS"];
+  repeated UpdateSignal freqList = 2;
+  // Mode 0 = Overwrite, Mode 1 = Append, Mode 2 = Remove
+  optional int32 mode = 3 [default = 0];
+}
+
+////
+// Update ArchiveFilterList
+//
+// msgName: UPDATE_FILTLIST, used to identify the message
+message UpdateFiltList
+{
+  optional string msgName   = 1 [default = "UPDATE_FILTLIST"];
+}
+
+////
+// Done with a tip
+//
+// msgName: TIP_DONE, used to identify the message
+message TipDone
+{
+  optional string msgName   = 1 [default = "TIP_DONE"];
+}
+
+////
+// New signals to add to the GlobalSignalList
+//
+// msgName: GLOBAL_SIGNAL_ADDITION, used to identify the message
+// chan: Channel Number
+message GlobalSignalAddition
+{
+  optional string msgName = 1 [default = "GLOBAL_SIGNAL_ADDITION"];
+  optional int32  feed_id = 2;
+  repeated string uuids   = 3;
+  repeated int32  signal_ids = 4;
+  repeated string old_uuids = 5;
+}
+
+
+////
+// Antenna Scan Steps
+//
+// msgName: ANT_SCN_STPS, used to identify the message
+// chan: Channel Number
+// steps: number of rotor steps
+message AntScnStps
+{
+  optional string msgName   = 1 [default = "ANT_SCN_STPS"];
+  optional int32 appid      = 2;
+  optional int32 steps      = 3;
+  optional int32 chan       = 4;
+}
+
+////
+// Antenna Point Info
+//
+//
+// msgName: ANTENNA_POINT_INFO
+// done: Done state (1=az done, 2=el done, 3=az init, 4=el init)
+// chan: Channel that is confirming movement
+// pos: Position of antenna (or position moving to for done=3/4)
+message AntennaPointInfo
+{
+  optional string msgName   = 1 [default = "ANTENNA_POINT_INFO"];
+  optional int32  done      = 2;
+  optional int32  chan      = 3;
+  optional float  pos       = 4;
+}
+
+////
+// Switching
+//
+//
+// msgName: SWITCHING
+message Switching
+{
+  optional string msgName   = 1 [default = "SWITCHING"];
+}
+
+////
+// Detections IDs that have been updated in the database
+//
+// msgName: Used to identify the message
+// detIDs: Repeated signal ids that were updated
+// filename: Archive file containing the detections
+message UpdateDetectionIDs
+{
+  optional string msgName   = 1 [default = "UPDATE_DETECTION_IDS"];
+  repeated int32  detIDs    = 2;
+  optional string filename  = 3 [default = ""];
+  optional string machine   = 4 [default = ""];
+}
+
+////
+// Snap Extra request message
+//
+// msgName: Used to idenetify the message
+message SnapExtraRequest
+{
+  optional string msgName   = 1 [default = "SNAP_EXTRA_REQUEST"];
+  optional string archfile  = 2;
+  repeated string tables    = 3;
+  repeated float  freq      = 4;
+  repeated float  bw        = 5;
+  repeated float  berth     = 6;
+  repeated int32  nframesth = 7;
+  repeated float  ratelines = 8;
+  repeated float  chiprate  = 9;
+  repeated string ofdm_names = 10;
+  optional int32  uniquefieldthreshold = 11;
+  optional string pristring = 12;
+  optional string mod       = 13;
+  optional string revisitID = 14;
+}
+
+////
+// Snap Extra response message
+//
+// msgName: Used to idenetify the message
+message SnapExtraResponse
+{
+  optional string msgName       = 1 [default = "SNAP_EXTRA_RESPONSE"];
+  optional string revisitID     = 2;
+  optional string response      = 3;
+}

@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_ant_scheduler;
+
+message ANTSchedulerConfig {
+    
+    message TimelineImportInfo {
+        optional string channelId = 1;
+        optional string startTime = 2;
+        optional string stopTime = 3;
+        optional string filePath = 4;
+    }
+
+    message BoxScanImportInfo {
+        optional float azStart = 1;
+        optional float azStop = 2;
+        optional float azStep = 3;
+        optional float elStart = 4;
+        optional float elStop = 5;
+        optional float elStep = 6;
+        optional float stepTime = 7;
+    }
+
+    optional string msgName = 1 [default = "service_ant_scheduler.AntSchedulerConfig"];
+
+    optional bool showGUI = 2 [default = false];
+    required int32 antenna = 3;
+    optional int32 mode = 4;
+    optional int32 polarity = 5;
+    optional int32 priority = 6;
+
+    optional string schedulePath = 7;
+    repeated TimelineImportInfo timelineImportInfos = 8;
+    optional BoxScanImportInfo boxScanImportInfos = 9;
+}

@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+import "service_rxdataplane.proto";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_energyburstdetector;
+
+
+message EnergyBurstDetectorConfig{
+    message BurstDetectionParams{
+      optional string msgName = 1 [default = "service_energyburstdetector.BurstDetectionParams"];
+      optional double minDur = 2 [default = 0.002];
+      optional double maxDur = 3 [default = 0.080];
+      optional double minBW = 4 [default = 10000];
+      optional double freqRes = 5 [default = 3500];
+      optional double timeRes = 6 [default = 0.0008];
+      optional double SNRThreshDB = 7 [default = 5];
+      optional double gradientThresh = 8 [default = 100];
+    }
+    message FFTParams{
+       optional string msgName = 1 [default = "service_energyburstdetector.FFTParams"];
+       optional double overlap = 2 [default = 0.5];
+       optional int32 averages = 3 [default = 4];
+    }
+
+    optional string msgName = 1 [default = "service_energyburstdetector.EnergyBurstDetectorConfig"];
+    optional service_rxdataplane.IQIngestFilter IQFilter = 2;
+    optional BurstDetectionParams burstParams = 3;
+    optional int32 writeAux = 4 [default=72];
+    optional string segmenterName = 5 [default= "UHF"];
+    optional FFTParams fftParams = 6;
+}
+

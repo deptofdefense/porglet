@@ -1,0 +1,213 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package to control and communicated with
+// RF receiver resources.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_receiver_msg;
+
+////
+// This message is sent to the receiver to set a standard property or request 
+// its value.  If an app is not a controller, SET requests will fail.  If the
+// app is not at least a user, GET requests will fail.
+//
+// msgName: RECEIVER_REQUEST, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// action: Action to perform (SET or GET property)
+// property: Type of property to get or set
+// value: New value of the property, ignored if GET
+message ReceiverRequest
+{
+  enum Action
+  {
+    SET = 0;
+    GET = 1;
+  }
+  
+  enum Property
+  {
+    FREQUENCY = 0;
+    BANDWIDTH = 1;
+    GAIN = 2;
+    REF = 3;
+  };
+  
+  optional string   msgName  = 1 [default = "RECEIVER_REQUEST"];
+  optional string   resID    = 2;
+  optional int32    appID    = 3;
+  optional Action   action   = 4;
+  optional Property property = 5;
+  optional float    value    = 6;
+}
+
+////
+// This message is sent to the app from the receiver in response to a request.
+//
+// msgName: RECEIVER_REQUEST, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// status: Whether the command was successful, SUCCESS or FAIL.  If a property
+//         cannot be retrieved, then set to DISCONNECTED.  If permissions fail
+//         then set to PERMISSIONS.
+// property: Type of property to get or set
+// value: Value of the property, to be ignored if failed GET action
+message ReceiverResponse
+{
+  enum Status
+  {
+    SUCCESS = 0;
+    FAIL = 1;
+    DISCONNECTED = 2;
+    PERMISSIONS = 3;
+  }
+  
+  optional string   msgName  = 1 [default = "RECEIVER_RESPONSE"];
+  optional string   resID    = 2;
+  optional int32    appID    = 3;
+  optional Status   status   = 4;
+  optional ReceiverRequest.Property property = 5;
+  optional float    value    = 6;
+}
+
+////
+// This message is sent to the receiver to get or set the URXID
+//
+// msgName: UNIQUE_RXID_REQUEST, used to identify the message
+// resID: Unique identifier of the resource to control
+// action: Action to perform (SET or GET property)
+// value: New value of the property, ignored if GET
+message UniqueRXIDRequest
+{
+  enum Action
+  {
+    SET = 0;
+    GET = 1;
+  }
+  
+  optional string   msgName  = 1 [default = "UNIQUE_RXID_REQUEST"];
+  optional string   resID    = 2;
+  optional Action   action   = 3 [default = GET];
+  optional string   value    = 4;
+}
+
+////
+// This message is sent to the app from the receiver in response to a request.
+//
+// msgName: UNIQUE_RXID_REQUEST, used to identify the message
+// resID: Unique identifier of the resource to control
+// value: Value of the property
+message UniqueRXIDResponse
+{
+  optional string   msgName  = 1 [default = "UNIQUE_RXID_RESPONSE"];
+  optional string   resID    = 2;
+  optional string   value    = 3;
+}
+
+////
+// This message is sent to the receiver to request information
+//
+// msgName: RECEIVER_INFO_REQUEST, used to identify the message
+message ReceiverInfoRequest
+{
+  optional string   msgName    = 1 [default = "RECEIVER_INFO_REQUEST"];
+}
+
+////
+// This message is sent to the health app from the receiver with information
+//
+// msgName: RECEIVER_INFO_RESPONSE, used to identify the message
+// resID: Unique identifier of the resource
+message ReceiverInfoResponse
+{
+  optional string   msgName  = 1 [default = "RECEIVER_INFO_RESPONSE"];
+  optional string   resID    = 2;
+  optional string   ntp      = 3;
+  optional string   ref      = 4;
+  optional string   pps      = 5;
+  optional string   comms    = 6;
+  optional string   ping     = 7;
+  optional string   raid     = 8;
+}
+
+
+////
+// This message is sent to the receiver to start a health test
+//
+// msgName: RECEIVER_HEALTH_TEST, used to identify the message
+// ntp: If NTP test should run
+// raid: If RAID test should run
+// singleraid: If the singleraid test should run
+message ReceiverHealthTest
+{
+  optional string   msgName    = 1 [default = "RECEIVER_HEALTH_TEST"];
+  optional int32    ntp        = 2;
+  optional int32    raid       = 3;
+  optional int32    singleraid = 4;
+}
+
+////
+// This message is sent to the health app from the receiver after a health test.
+//
+// msgName: RECEIVER_HEALTH_RESPONSE, used to identify the message
+// resID: Unique identifier of the resource
+// ntp: NTP status
+// ref: Ref status
+// pps: PPS status
+// comms: Comms status
+// ping: ping status
+// raid: RAID status
+message ReceiverHealthResponse
+{
+  optional string   msgName  = 1 [default = "RECEIVER_HEALTH_RESPONSE"];
+  optional string   resID    = 2;
+  optional string   ntp      = 3 [default = "-"];
+  optional string   ref      = 4 [default = "-"];
+  optional string   pps      = 5 [default = "-"];
+  optional string   rx       = 6 [default = "-"];
+  optional string   ping     = 7 [default = "-"];
+  optional string   raid     = 8 [default = "-"];
+}
+
+////
+// This message is sent to the health app from ResourceMMS with status info.
+//
+// msgName: MMS_STAT, used to identify the message
+// resID: Unique identifier of the resource
+// ntp: NTP status
+// ref: Ref status
+// pps: PPS status
+// comms: Comms status
+// ping: ping status
+// raid: RAID status
+// TODO params
+message MMSStat
+{
+  optional string   msgName  = 1 [default = "MMS_STAT"];
+  optional string   resID    = 2;
+  optional int32    id       = 3;
+  optional string   sn       = 4;
+  optional int32    chans    = 5;
+  optional string   conn     = 6;
+  optional string   tod      = 7;
+  optional string   rcv      = 8;
+  optional string   brd      = 9;
+  optional string   wbddc    = 10;
+  optional string   out      = 11;
+  optional string   temp     = 12;
+  optional int32    id2      = 13;
+  optional string   conn2    = 14;
+  optional string   rcv2     = 15;
+  optional string   wbddc2   = 16;
+  optional string   out2     = 17;
+  optional string   wdt      = 18;
+  optional int32    line     = 19;
+}
+

@@ -1,0 +1,69 @@
+syntax = "proto2";
+
+package products;
+
+message FisD
+{
+    enum FileType {
+        FS = 0;
+        TC = 1;
+        BER = 2;
+    }
+
+    message Meta {
+        optional FileType file_type = 1;
+        optional string file_name = 2;
+        optional string event_id = 3;
+        optional int32 soi = 4;
+        optional string eltex = 5;
+    }
+
+    optional string msgName = 1 [default = "FISD"];
+    optional bytes file = 2;
+    optional Meta meta = 3;
+}
+
+message FisDRequest
+{
+    optional string msgName = 1 [default = "FISDREQUEST"];
+    optional string event_id = 2;
+    optional int64 soi = 3;
+    optional string eltex = 4;
+}
+
+
+//
+// msgName: AUDIOAVAILABLE, used to identify the message
+// msgID: ID to use for the return message
+message AudioAvailable
+{
+
+  enum Status {
+    AVAILABLE = -1;
+    UNAVAILABLE = 0;
+    PENDING = 1;
+  }
+
+  optional string msgName = 1 [default = "AUDIOAVAILABLE"];
+  optional double cffreq = 2;
+  optional Status status = 3;
+  optional string audiofile = 4;
+  optional int32  msgID = 5;
+  optional string soiNum = 6;
+}
+
+message AudioRequest
+{
+    enum TYPE {
+      STREAM = 0;
+      FILE = 1;
+    }
+
+    optional string msgName = 1 [default = "AUDIOREQUEST"];
+    optional TYPE type = 2;
+    optional int32 appChan = 3;
+    optional float rfFreq = 4;
+    optional int64 soi = 5;
+    optional string eltex = 6;
+    optional bool start = 7; 
+}

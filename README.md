@@ -101,7 +101,7 @@ In this version, each scanner operates as separate standalone programs operating
 ### [support](./support)
 Utility scripts to help with various tasks like IQ file conversions.
 
-### [rxcommand](./rxcommand/)
+### [galileo](./galileo/)
 A class and cli POC for sending RX control messages to CFE/Galileo. When porglet detects an interesting signal it can tell galileo to investigate.
 
 ### [web](./web/)

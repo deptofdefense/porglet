@@ -1,0 +1,515 @@
+syntax = "proto2";
+
+package fv.tb.protos.TBProtos;
+
+
+// Include message types from other files
+import "FalconCommonMessages.proto";  // contains KeyValuePair
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.tb.protos";
+option java_outer_classname = "TBProtos";
+
+////
+// THUNDERBIRD MESSAGES
+////
+
+////
+// ZapCloseSelf - Command a macro / application to close
+message CloseSelf
+{
+    optional string msgName     = 1 [default = "CLOSESELF"];
+    optional string uniqueWord  = 2;
+}
+
+////
+// EWCommandRequest - Parameters for an EW request - used to either start or stop and EW effect
+// Signal agnostic effects will not use a globalId, and applicable user inputted paramters will be in the Parameters field.
+// Detect driven will send the globalId from EWOptions, which should match the globalId of a detection/event.
+// Active of true = start, active of 0 = stop
+// Return a CommonResponse message with the same msgId
+message EWCommandRequest {
+    optional string msgName = 1 [default = "EW_COMMAND_REQUEST"];
+    optional EWCapability ewcap = 2;
+    optional bool active = 3;
+    optional string sensorName = 4 [default = ""];
+}
+
+// Parameter is any additional input a user needs to provide to perform an effect (e.g. frequency, bandwidth, etc.)
+message Parameters {
+    optional string msgName = 1 [default = "EW_PARAMETER"];
+
+    // Center frequency to place the jam
+    optional float jamCFMHz     = 10;
+    // Center frequency to place the jam. TB will set this
+    optional float tuneCFMHz    = 11;
+    // Bandwidth of the jam
+    optional float jamBWMHz     = 12;
+    // Baudrate of the jam
+    optional float jamBaudrate  = 13;
+    // Deviation of the jam
+    optional float jamDeviation = 14;
+    optional float onCycle      = 15;
+    optional float totalCycle   = 16;
+    optional int32 modeID       = 17;
+    optional int32 sourceID     = 18;
+    optional int32 destinationID = 19;
+    optional int32 frameFormat  = 20;
+    optional string textMessage  = 21;
+    optional double lat = 22;
+    optional double lon = 23;
+    optional int32 numTargets = 24;
+    repeated falcon_common_msg.KeyValuePair kvps = 25;
+    optional double jamIFMHz = 26 [default = 0];
+
+}
+
+// Current status
+// Send on change only, unless currently active  (in which case send once every 5 seconds)
+message EWStatus {
+    optional string msgName = 1 [default = "EW_STATUS"];
+    repeated OutputChannelStatus outputChannelStatus = 2;
+}
+
+message OutputChannelStatus {
+    enum TransmitState {
+        READY = 0;
+        NOT_READY = 1;
+        ACTIVE = 2;
+    }
+    optional string msgName = 1 [default = "EW_OUTPUT_CHANNEL_STATUS"];
+    optional string effect = 2;
+    optional double transmitFreq = 3;
+    optional string globalId = 4;
+    optional string antenna = 5;
+    optional TransmitState state = 6;
+    optional double powerMeter = 7;
+    optional string resID = 8;
+    optional string signalName = 9;
+}
+
+message EWTransmittingRequest{
+    optional string msgName = 1 [default = "EW_TRANSMITTING_REQUEST"];
+}
+
+message EWCapabilityUnregister{
+    optional string  msgName = 1 [default = "EW_CAPABILITY_UNREGISTER"];
+    optional string capabilityId = 2;
+
+}
+
+message EWCapability{
+    enum DetectionSource {
+        EXTERNALS = 0;
+        INTERNALS = 1;
+        SIGUP = 2;
+        THUNDERBIRD = 3;
+    }
+
+    optional string msgName = 1 [default = "EW_CAPABILITIY"];
+    optional string signalName = 2;
+    optional string effect = 3;
+    optional string capabilityId = 4;
+    optional string globalID = 5;
+    optional float percentReady = 6 [default = 0];
+    optional Parameters parameters = 7;
+    optional string tbUniqueID = 8;
+}
+
+message EWCapabilities{
+    optional string msgName = 1 [default = "EWCAPABILITIES"];
+    repeated EWCapability ewcap = 2;
+    optional string sensorName = 3 [default = ""];
+}
+
+message EWCapabilityTransmitting{
+    optional string msgName = 1 [default = "EW_CAPABILITY_TRANSMITTING"];
+    optional EWCapability ewcap = 2;
+    optional bool active = 3 [default = false];
+}
+
+message EWTransmitting{
+    optional string msgName = 1 [default = "EW_TRANSMITTING"];
+    repeated EWCapability ewcap = 2;
+    optional string sensorName = 3;
+}
+
+message EWTechniqueDescriptions
+{
+    optional string msgName = 1 [default = "EWTECHNIQUEDESCRIPTIONS"];
+    repeated string techniqueDescription = 2;
+}
+
+message EWTechniqueDescriptionsRequest
+{
+    optional string msgName = 1 [default = "EWTECHNIQUEDESCRIPTIONSREQUEST"];
+}
+
+//Each target has a list of effects that are applicable to it.
+//If global id is not set, those effects are consided signal agnostic and may be selected without an active event
+message EWOption {
+    enum DetectionSource {
+        EXTERNALS = 0;
+        INTERNALS = 1;
+        SIGUP = 2;
+        THUNDERBIRD = 3;
+    }
+    optional string msgName = 1 [default = "EW_OPTION"];
+    optional string signalName = 2;
+    repeated string effect = 3;
+    optional DetectionSource detectionSource = 4;
+    optional string globalId = 5;
+}
+
+//List of EW options to choose from. globalId is unique identifier of event, or hit
+message EWOptions {
+    optional string msgName = 1 [default = "EW_OPTIONS"];
+    repeated EWOption ewopt = 2;
+}
+
+////
+// EWOptionsRequest - Request to send EWOptions status message. No CommonResponse message expected.
+message EWOptionsRequest {
+    optional string msgName = 1 [default = "EW_OPTIONS_REQUEST"];
+}
+
+////
+// EWStatusRequest - Request to send EWStatus status message. No CommonResponse message expected.
+message EWStatusRequest {
+   optional string msgName = 1 [default = "EW_STATUS_REQUEST"];
+
+}
+
+message EWCapabilitiesRequest{
+   optional string msgName = 1 [default = "EW_CAPABILITIES_REQUEST"];
+}
+
+// Status message saying that a specific global ID is no longer being tracked
+message EWOptionDelete {
+    optional string msgName  = 1 [default = "EW_OPTION_DELETE"];
+    optional string globalId = 2;
+}
+
+// Command Message to stop transmitting
+message EWCeaseBuzzer {
+    optional string msgName = 1 [default = "EW_CEASE_BUZZER"];
+}
+
+// Provides antenna info to macro
+message TxAntennaConfig {
+    optional string msgName        = 1  [default = "TX_ANTENNA_CONFIG"];
+    optional string antName        = 2;
+    optional double minRF          = 3;
+    optional double maxRF          = 4;
+    optional float  fixedAngle     = 5  [default = -999];
+    optional float  latitude       = 6  [default = 0];
+    optional float  longitude      = 7  [default = 0];
+    optional float  altitude       = 8  [default = 0];
+    optional float  beamwidth      = 9  [default = 0];
+    optional float  dwncnvtLO      = 10 [default = 0];
+    optional int32  ssc            = 11 [default = -1];
+    optional string band           = 12;
+    optional string polarization   = 13;
+    optional int32  group          = 14;
+    optional float  sightDistance  = 15 [default = 500];
+    optional string noiseTest      = 16 [default = "NO_TEST"];
+}
+
+// Provides amp info to macro
+message TxAmpConfig {
+    optional string msgName  = 1 [default = "TX_AMP_CONFIG"];
+    optional string ampName  = 2;
+    optional string IP       = 3 [default = "nportserver"];
+    optional int32  port     = 4 [default = 4012];
+    optional bool   hardware = 5;
+}
+
+// Provides transmitter info to macro
+message TransmitterConfig {
+    enum SiggenType {
+      ROHDE_SCHWARZ = 0;
+      MMS_MUP = 1;
+    };
+
+    optional string msgName    = 1 [default = "TRANSMITTER_CONFIG"];
+    optional string txName     = 2;
+    optional float  clkFreq    = 3 [default = 400e6];
+    optional int32  dacInterp  = 4 [default = 16];
+    optional int32  coreInterp = 5 [default = 1];
+    optional int32  baseChan   = 6 [default = 1];
+    optional int32  numBuffers = 7 [default = 2];
+    optional float  freqShift  = 8 [default = 0];
+    optional string siggenIP   = 9;
+    optional SiggenType siggenType = 10 [default = ROHDE_SCHWARZ];
+}
+
+// Provides updated Jamming Information
+message techniqueCommand {
+    enum CommandType {
+        TURNOFF = 0;
+        TURNON  = 1;
+        UPDATE  = 2;
+        RESET   = 3;
+    }
+    optional string msgName      = 1 [default = "TECHNIQUECOMMAND"];
+    optional CommandType command = 2;
+    optional EWCapability ewcap  = 3;
+}
+
+// signalFrame messages for TB bit ingest
+message newSignalFrame {
+    optional string msgName   = 1 [default = "NEWSIGNALFRAME"];
+    optional string radioName = 2;
+    optional int32 frameID    = 3;
+}
+
+// Thunderbird sends a message, and any listening techniques
+// will send a RegisterRequest
+message RegisterQuery {
+    optional string msgName         = 1 [default = "REGISTERQUERY"];
+    optional string sensorName      = 2;
+}
+
+// Regesters a technique within Thunderbird
+message RegisterRequest {
+    optional string msgName              = 1 [default = "REGISTERREQUEST"];
+    optional string platformName         = 2;
+    optional string techniqueName        = 3;
+    optional string tbUniqueID           = 4;
+    optional string dataPipeName         = 5;
+    optional string metaPipeName         = 6;
+    optional string techniqueDescription = 7;
+    optional int32 numberOfZPipePorts    = 8 [default = 1];
+    optional string sensorName = 9;
+    optional float estimatedCenterFreqMHz = 10;
+    optional int32 overrideChannel       = 11 [default = -1];
+}
+
+// Regesters a technique within Thunderbird
+message UnregisterRequest {
+    optional string msgName    = 1 [default = "UNREGISTERREQUEST"];
+    optional string tbUniqueID = 2;
+}
+
+// Thunderbird responds when it receieves a valid registration
+message RegisterResponse {
+    optional string msgName      = 1 [default = "REGISTERRESPONSE"];
+    optional string idNum        = 2;
+    repeated int32 ports         = 3;
+    optional float sampleRateSps = 4;
+    optional float minFreqMHz    = 5 [default = 20.0];
+    optional float maxFreqMHz    = 6 [default = 6000.0];
+    optional int32 assignedChannel = 7;
+    optional string sensorName   = 9;
+}
+
+// These messages contain hop status
+message HopAttackStatus {
+    optional string msgName   = 1 [default = "HOPATTACKSTATUS"];
+    optional string platform  = 2;
+    optional int32 totalhops  = 3;
+    optional int32 goodhops   = 4;
+    optional float percentage = 5;
+}
+
+// These messages request that thunderbird change its output frequency
+message TxFreqRequest {
+    optional string msgName  = 1 [default = "TXFREQREQUEST"];
+    optional float freqHz    = 2;
+    optional string globalID = 3;
+}
+
+////
+// ManualJam - set a manual jam
+message EmergencyJam
+{
+    optional string msgName    = 1 [default = "EMERGENCYJAM"];
+    optional double centerFreq = 2 [default = 2440];
+    optional double bandwidth  = 3 [default = 84];
+    optional int32 targetID    = 4 [default = -1];
+}
+
+////
+// ManualJam - set a manual jam
+message JamOff
+{
+    optional string msgName = 1 [default = "JAMOFF"];
+    optional int32 targetID = 4 [default = -1];
+}
+
+message EWSDRRequest {
+    repeated Aperture aperture       = 1;
+    repeated Transceiver transceiver = 2;
+    optional string guid             = 3;
+    optional int32 priority          = 4;
+    optional bool enabled            = 5;
+}
+
+////
+// EWSDRCommand Message
+// This will force the EW Processor to send the aperture or receiver to specific
+// given postions/freqs.
+// aperture             Messages for the positioner
+// transceiver          Messages for a tranceiver
+message EWSDRCommand {
+    repeated Aperture aperture       = 1;
+    repeated Transceiver transceiver = 2;
+    optional string guid             = 3;
+    optional int32 priority          = 4;
+    optional bool enabled            = 5;
+}
+
+////
+// Aperture Message
+// This contains a specific postion for an aperture
+// antenna              The antenna number that is being commanded
+// azimuth              In degrees, 0=North
+// elevation            In degrees, 0=Horizon
+// polarization         1 = Vertical; 2 = Horizontal; 3 = RHCP; 4 = LHCP
+message Aperture {
+    optional int32 antenna      = 1;
+    optional float azimuth      = 2;
+    optional float elevation    = 3;
+    optional int32 polarization = 4;
+    optional int32 priority     = 5 [default = 100];
+    optional string guid        = 6 [default = 'UNSPECIFIED'];
+}
+
+////
+// Transceiver Message
+// This contains a specific setting for a transceiver
+// transceiver          The transceiver number that is being commanded
+// freqMHz              The freq we want to tune to
+// gainDB               The gain setting
+message Transceiver {
+    optional int32 transceiver = 1;
+    optional int32 channel     = 2;
+    optional float freqMHz     = 3;
+    optional int32 gainDB      = 4;
+    optional int32 priority    = 5 [default = 100];
+    optional string guid       = 6 [default = 'UNSPECIFIED'];
+}
+
+////
+// ThreatStatus Message
+// Any information that the EW Processor pulled based on its ES capabilities
+// will be reported using this message
+message ThreatStatus {
+    repeated falcon_common_msg.KeyValuePair kvps = 1;
+}
+
+////
+// EWSDRStatus Message
+// Contains the current status of the apertures and tranceivers
+message EWSDRStatus {
+    repeated Aperture apertures       = 1;
+    repeated Transceiver transceivers = 2;
+}
+
+////
+// SetAppParameters Message
+// Set an internal processor's priority for certain services and seed it with
+// initial parameters for those services
+message SetAppParameters {
+    optional string eltex            = 1;
+    optional string soiNum           = 2;
+    optional string globalID         = 3;
+    optional int32 appID             = 4;
+    optional string sensorName       = 5;
+    optional int32 superPriority     = 6;
+    repeated Aperture aperture       = 7;
+    repeated Transceiver transceiver = 8;
+}
+
+////
+// MissionMode Message
+// Set the mode of the system
+// mode                 1 = Search; 2 = Automatic Mode; 3 = Override or Track Mode
+message MissionMode {
+    enum Mode {
+        SEARCH = 1;
+        AUTO   = 2;
+        TRACE  = 3;
+    }
+    optional Mode mode = 1;
+}
+
+////
+// A new signal has been locked or signal down.  This provides information
+// about the active event IDs.
+//
+// msgName: SIGNAL_EVENT, used to identify the message
+// channel: Channel number from the receiver config
+// eventType: Type of signal event (SIGUP or SIGDOWN)
+// eventID: Event ID set by the processing macro
+// timestamp: Time format YYYY:MM:DD::HH:MM:SS from UPTIME or DNTIME
+// soiNum: The message SOI parameter
+// rfMHz: If SIGUP, the RFMHZ parameter
+// subcarMHz: If SIGUP, the SCMHZ parameter
+// excurKHz: If SIGUP, the EXKHZ parameter
+// appID: Application ID
+// antNum: Antenna number in switch (port number)
+// antAz: Antenna Azimuth for detection
+// antEl: Antenna Elevation for detection
+// globalID: UUID for signal
+// exportPort: If there is an export port, this is it
+message SignalEvent
+{
+  enum Type {
+    SIGDET = 0;
+    SIGUP = 1;
+    SIGDOWN = 2;
+    SIGTIMEOUT = 3;
+  }
+
+  optional string msgName   = 1 [default = "SIGNAL_EVENT"];
+  optional int32  channel   = 2;
+  optional Type   eventType = 3;
+  optional string eventID   = 4;
+  optional string timestamp = 5;  // UPTIME or DNTIME
+  optional string soiNum    = 6;
+  optional float  rfMHz     = 7;
+  optional float  subcarMHz = 8;
+  optional float  excurKHz  = 9;
+  optional int32  appID     = 10;
+  optional int32  antNum    = 11;
+  optional float  antAz     = 12 [default = 0];
+  optional float  antEl     = 13 [default = 0];
+  optional string globalID  = 14;
+  optional string scrypt    = 15;
+  optional int32 exportPort = 16;
+  optional string eltex     = 17;
+  optional float bwMHz     = 18;
+  optional string sensorName     = 19 [default = ""];
+}
+
+// TX Signal Params Message
+message TxSignalParams
+{
+    optional string msgName         = 1 [default = "TX_SIGNAL_PARAMS"];
+    optional string sigName         = 2;
+    optional string fileName        = 3;
+    optional float sampleRateMHz    = 4 [default = 25];
+    optional double centerFreq      = 5 [default = 915];
+    optional string config          = 6 [default = "CONFIG"];
+}
+
+message TxFileStatus
+{
+    optional string msgName         = 1 [default = "TX_FILE_STATUS"];
+    optional string sigName         = 2;
+    optional string fileName        = 3;
+    optional string config          = 4 [default = "CONFIG"];
+}
+
+message CalibrationTimingResult
+{
+  optional string msgName = 1 [default = "CALIBRATIONTIMINGRESULT"];
+  optional double wholeSeconds = 2 [default = 0];
+  optional double fracSeconds = 3 [default = 0];
+  optional int32 transmittedByChannel = 4;
+  optional int32 receivedByChannel = 5;
+}
+
+

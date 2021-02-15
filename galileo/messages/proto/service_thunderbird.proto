@@ -1,0 +1,124 @@
+syntax = "proto2";
+
+package service_thunderbird;
+
+message ThunderbirdConfig {
+    optional string msgName = 1 [default = "service_thunderbird.ThunderbirdConfig"];
+    optional string script = 2;
+
+    optional float gaindb = 4 [default = 30];
+
+    // When we have multiple channels, this is how many ZPipe ports will be reserved for each channel
+    optional int32 numberZPipePortsPerChannel = 6 [default = 30];
+
+    // FIXME: This needs to go...it is used as a (global) channel number. See comments on `QServiceThunderbird#index`
+    //   for discussion.
+    optional int32 index = 8 [default = 2];
+
+    // Cooldown during which these messages will only be sent if either their value changed since last sent or e.g. we
+    // are responding to a specific request.
+    optional double ewCapabilitiesRebroadcastCooldown = 101 [default = 5.0];
+    optional double ewTransmittingRebroadcastCooldown = 102 [default = 5.0];
+
+    // Debugging-only options.
+    optional bool plotOutputSpectrumEnabled = 11 [default = false];
+    optional bool plotOutputSpectrumThinned = 12 [default = true];
+    optional bool xpipemonitorEnabled = 13 [default = true];
+
+    // Configuration _primarily_ aimed at the `muxtx` primitive. Encapsulated in a submessage for organizational
+    // purposes.
+    message MuxtxConfig {
+        // If set to something other than `-0x80000000` (the default), the `/PPRIO` switch will be used with the
+        // provided value when calling `muxtx`. Notable possibilities are:
+        //
+        // *   `4` -- corresponds to a `nice(1)` value of `0`
+        // *   `11` -- corresponds to a `nice(1)` value of `-3`
+        // *   `15` -- corresponds to a `nice(1)` value of `-5`
+        //
+        // See `help PPRIO` for additional options.
+        //
+        // ### Using `#midasProcessPriority` as a non-root user
+        //
+        // Note that using this as a non-root user requires some prerequisites:
+        //
+        // 1.  Update the system configuration to allow the appropriate user to increase their nice values, e.g.
+        //     create `/etc/security/limits.d/90-nice.conf` with contents e.g.:
+        //
+        //         @midas     -       nice      -5
+        //
+        // 2.  X-Midas goes through some convolutions to set the priority, so some additional legwork is required:
+        //
+        //     1.  Change the owner of `"${XMDISK}"/xm/unix/xmpriority.allow` to `root`, e.g.:
+        //
+        //             sudo chown root:root "${XMDISK}"/xm/unix/xmpriority.allow
+        //
+        //     2.  Update `"${XMDISK}"/xm/unix/xmpriority` to not fail if `setuid(2)` fails, e.g.:
+        //
+        //         1.  Edit `"${XMDISK}"/xm/unix/xmpriority.c`, to make the branch where `setuid(id_root) != 0`
+        //             non-fatal (e.g. comment out the `return (-1);`).
+        //
+        //         2.  Rebuild the binary, e.g.:
+        //
+        //                 make -C "${XMDISK}"/xm/unix xmpriority
+        //
+        // ### Using `#midasProcessPriority` from in a Docker container
+        //
+        // Assuming `"${XMDISK}"/xm/unix/xmpriority.allow` is already owned by root in the image you're running and that
+        // you run the container as root, then simply start the container using e.g. `docker run --ulimit=nice=40 ...`.
+        optional int32 midasProcessPriority = 1 [default = -0x80000000];
+
+        // Used as the value of the `muxtx/OUTXFERLEN` switch. Sets the number of samples associated with each header
+        // packet in the `muxtx` output stream.
+        optional int32 outputSamplesPerHeader = 2 [default = 262144];
+    }
+    optional MuxtxConfig muxtxConfig = 14;
+
+    // Configuration aimed at the `throttle_headers` primitive. Encapsulated in a submessage for organizational
+    // purposes.
+    //
+    // This primitive is added to the X-Midas pipeline immediately after the `muxtx` primitive and throttles the header
+    // output stream coming from `muxtx` based on the timestamps contained within.
+    //
+    // Primarily useful if the other end of the connection might not be initial connected (which would, without this
+    // primitive, result in the `muxtx` primitive pushing as far into the future as it possibly can).
+    message ThrottleHeadersConfig {
+        // Whether or not the `throttle_headers` primitive should be used at all.
+        //
+        // N.B.: Enabling this will increase the base transmit latency.
+        optional bool enabled = 1 [default = false];
+
+        // Used as the value of the `throttle_headers/THROTTLE_TIME_OFFSET` switch. Set to e.g. `20` (the default) to
+        // throttle the header output stream from the `muxtx` primitive when its headers indicate timestamps more than
+        // 20 seconds into the future.
+        optional double throttleTimeOffset = 2 [default = 20];
+    }
+    optional ThrottleHeadersConfig throttleHeadersConfig = 15;
+
+    // Configuration aimed at the number of transmit channels within Thunderbird.
+    // Encapsulated in a submessage for organizational purposes.
+    //
+    // Thunderbird can have multiple output channels within a single Thunderbird instance.
+    // Each channel can be differentiated currently by frequency, but there is no reason this could
+    // not have other differentiators as well.
+    message TBChannelConfig {
+        // Channel Number / Designator
+        optional int32 channelNumber = 1 [default = 1];
+
+        // This is the sample Rate of the output channel
+        optional double sampleRate = 2 [default = 100e6];
+
+        // These set the minimum and maximum frequencies on which a
+        // channel of thunderbird is allowed to operate, in MHz. For
+        // example, if there are multiple channels within the Thunderbird, this
+        // is one way to differentiate which channel the Thunderbird will register on.
+        optional double minFreqMHz = 3 [default = 20.0];
+        optional double maxFreqMHz = 4 [default = 6000.0];
+
+        // This is the output port of the specific channel
+        optional int32 zpipeport = 5 [default = 38599];
+
+        // This is the device name of the channel, if there is one
+        optional string device = 6 [default = "ZPIPE"];
+    }
+    repeated TBChannelConfig tbChannels = 16;
+}

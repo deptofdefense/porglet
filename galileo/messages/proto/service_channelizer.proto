@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+import "service_rxdataplane.proto";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_channelizer;
+
+message ChannelizerConfig{
+    optional string msgName = 1 [default = "service_channelizer.ChannelizerConfig"];
+    optional service_rxdataplane.IQIngestFilter IQFilter = 2;
+    // Sample Rate for incoming data. This is the wideband (e.g. not-derived) 
+    // sample rate. TODO -- make this zero-config 
+    optional double sampleRate = 3 [default = 25000000];
+    // Number of Sub-channels
+    optional int32 numChans = 4 [default = 20];
+}
+

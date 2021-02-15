@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+package fv.tb.protos.DMRProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.dmr.protos";
+option java_outer_classname = "DMRProtos";
+
+////
+// DMR MESSAGES
+////
+
+////
+// This message contains a frame of ProMachina data. It also has some header
+// information in it for follow-on message reads
+//
+// msgName: DMRMETA, used to identify the message
+
+message DmrMeta {
+    optional string msgName = 1 [default = "DMRMETA"];
+    optional double cffreq = 2;
+    optional string srcType = 3;
+    optional int32 srcAddr = 4;
+    optional string destType = 5;
+    optional int32 destAddr = 6;
+    optional int32 timeSlot = 7;
+    optional string callType = 8;
+    optional int32 colorCode = 9;
+    optional string text = 10 [default = "None"];
+    optional string geo = 11 [default = "None"];
+}

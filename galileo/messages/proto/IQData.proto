@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package public_topics;
+
+import "TunerMessages.proto";
+import "ServiceInfrastructureCommon.proto";
+
+message IQDataTopic
+{
+
+    optional service_infrastructure.Header header = 1;
+
+    optional tuner_msg.SnapInfo snap_info = 2;
+
+
+
+}

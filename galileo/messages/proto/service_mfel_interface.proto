@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_mfel_interface;
+
+message mfelInterfaceConfig {
+
+    optional string msgName = 1 [default = "service_mfel_interface.mfelInterfaceConfig"];
+
+    optional int32 portNum = 2 [default = 2702];
+
+    optional string mfelHostName = 3 [default = 'mfel01.realm.cfe.external'];
+
+}
+

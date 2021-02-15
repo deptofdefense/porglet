@@ -1,0 +1,47 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package for remoting.  These are send to and
+// from the Falcon Vision service and can be used by the GUI.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_debug_msg;
+
+message Info {
+  optional string msgName   = 1 [default = "INFO"];
+
+  optional string hostname  = 10 [default = "localhost"];
+  optional string timestamp = 20;
+
+  optional string reporter  = 30;
+  optional string msg       = 31;
+}
+
+message Warning {
+  optional string msgName   = 1 [default = "WARNING"];
+
+  optional string hostname  = 10 [default = "localhost"];
+  optional string timestamp = 20;
+
+  optional string reporter  = 30;
+  optional string msg       = 31;
+}
+
+message Error {
+  optional string msgName   = 1 [default = "ERROR"];
+
+  optional string hostname  = 10 [default = "localhost"];
+  optional string timestamp = 20;
+
+  optional string reporter  = 30;
+  optional string msg       = 31;
+  optional bool fatal       = 32;
+}
+
+

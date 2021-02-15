@@ -1,0 +1,133 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in ServiceWebSettings.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package fv.settings.protos;
+
+////
+// SetMission message is used to change the currently running mission
+//
+// msgName: SET_MISSION, used to identify the message
+// platScrypt: Name of the .plat scrypt to use
+message SetMission
+{
+    optional string msgName = 1 [default = "SET_MISSION"];
+    optional string platScrypt = 2;
+}
+
+////
+// UpdateSetting message is used to update different setings. Multiple settings
+// can be updated at one time.
+//
+// msgName: UPDATE_WEB_SETTING, used to identify the message
+// setting: List of settings to change
+message UpdateWebSetting 
+{
+    optional string msgName = 1 [default = "UPDATE_WEB_SETTING"];
+    repeated UpdateSettingType setting = 2;
+}
+
+////
+//  UpdateSettingType is used in UpdateSetting to change settings.  Currently
+//  only one setting exists (UpdateDefaultMission)
+//
+//  type: Type of update to perform
+message UpdateSettingType
+{
+    extensions 100 to max;
+
+    enum Type
+    {
+        UpdateDefaultMission = 1;
+    }
+
+    required Type type = 1;
+}
+
+////
+// Not sure how this works.  Someone should comment this
+message UpdateDefaultMission 
+{
+    extend UpdateSettingType
+    {
+        optional UpdateDefaultMission update_setting_type = 100;
+    }
+    repeated string default_missions = 1; 
+}
+
+////
+// WebSettingsRequest message used to request the current settings.
+//
+// msgName: WEB_SETTINGS_REQUEST, used to identify the message
+message WebSettingsRequest
+{
+    optional string msgName = 1 [default = "WEB_SETTINGS_REQUEST"];
+}
+
+////
+// WebSettingsResponse message is the response that contains all the WebSettings
+//
+// msgName: WEB_SETTINGS_RESPONSE, used to identify the message
+// mission: Mission message containing mission settings
+// scrypts: List of ScryptDetail messages
+message WebSettingsResponse
+{
+    optional string msgName = 1 [default = "WEB_SETTINGS_RESPONSE"];
+    optional Mission mission = 2;
+    repeated ScryptDetail scrypts = 3;
+}
+
+////
+// Mission message used by WebSettingsResponse to contain the mission info
+//
+// default_missions: List of scrypts in the default mission
+// mission_list: list of all missions
+message Mission
+{
+    repeated string default_missions = 1;
+    repeated string mission_list = 2;
+}
+
+////
+// Scrypt message used by WebSettingsResponse to contain the scrypt details.
+// This is the name and processing thread of the scrypt.
+//
+// scryptName: Name of scrypt
+// scryptThread: Name of thread for scrypt
+message ScryptDetail
+{
+    optional string scryptName = 1;
+    optional string scryptThread = 2;
+}
+
+////
+// UpdateWebSettings acknowledgement message.  This is sent as a response to 
+// an UpdateWebSettings message.
+//
+// msgName: UPDATE_WEB_SETTINGS_ACK_NACK, used to identify the message
+// status: List of SettingStatus messages for each update
+message UpdateWebSettingsAckNack 
+{
+    optional string msgName = 1 [default = "UPDATE_WEB_SETTINGS_ACK_NACK"];
+    repeated SettingsStatus status = 2;
+}
+
+////
+// SettingStatus message used in UpdateWebSettingAckNack message.  Used to 
+// provide information on the status of the update.
+//
+// message_type: Type of update for this Ack/Nack
+// error_text: String with info about the Ack/Nack
+message SettingsStatus
+{
+    required UpdateSettingType message_type = 1;
+    required string error_text = 2;
+}

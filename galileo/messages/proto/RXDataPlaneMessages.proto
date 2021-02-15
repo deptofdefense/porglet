@@ -1,0 +1,187 @@
+syntax = "proto2";
+
+import "TunerMessages.proto";
+
+package rxdataplane_msg;
+
+// Message sent for all pre-processed data artifacts.
+//
+// msgName: DataPlaneInfo, used to identify the message
+// widebandHdr: I/Q Metadata from the original wideband header
+
+// SnapInfo: SnapInfo message for I/Q Data
+// SpectrogramInfo: Envelope containing spectrogram transforms
+// PSDInfo: Envelope containing PSD transforms
+// SingleChannelInfo: Envelope containing sub-band tuned, 
+//                    channelized data
+// energyBurstInfo: Envelope containing detected energy bursts 
+// pdwInfo: Envelope containing detected radar pulses
+
+message DataPlaneInfo
+{
+  optional string msgName     = 1 [default = "DATAPLANEINFO"];
+
+  // Header for the I/Q file the transform was applied
+  optional tuner_msg.IQHeaderInfo IQHeader  = 2;
+
+  // Advertises the availability of a product
+  // SNAPINFO is _mutually exclusive_ with the dataplane products
+  // defined below, and sent first.
+  // Example:
+  // RXDataPlane will generate:
+  // (1) DataPlaneInfo{widebandHdr,snapInfo}, THEN
+  // (2) DataPlaneInfo{widebandHdr,spectrogramInfo,energyBurstInfo,chanInfo}
+  optional tuner_msg.SnapInfo snapInfo  = 3;
+
+  // These products are synchronous (right now...)
+  // The envelopes contain the ramSnapID of the I/Q data on which the 
+  // transform was performed, and possibly multiple messages of each type.
+  // For example, there may be two spectrogramInfo messages, each at a
+  // different resolution
+  optional SpectrogramInfoEnvelope spectrogramEnvelope = 4;
+  optional PSDInfoEnvelope PSDEnvelope = 5;
+  optional EnergyBurstInfoEnvelope energyBurstEnvelope = 6;
+  optional SingleChannelInfoEnvelope singleChannelEnvelope = 7;
+  optional PDWInfoEnvelope pdwEnvelope = 8;
+}
+
+// Wrapper for all the possible singleChannelInfo messages
+message SingleChannelInfoEnvelope
+{
+  optional string msgName     = 1 [default = "SINGLECHANNELINFOENVELOPE"];
+  // ramSnapID of the parent this product was produced from
+  optional string snapid = 2;
+  repeated SingleChannelInfo chanInfo = 3;
+}
+
+message SingleChannelInfo
+{
+   optional string msgName     = 1 [default = "SINGLECHANNELINFO"];
+   optional tuner_msg.IQHeaderInfo IQHeader = 2;
+   optional int32 subChannel = 3;
+   optional int32 aux = 4;
+   optional int32 fileIndex = 5;
+}
+
+// Message sent spectrograms (multiple PSDs over time)
+//
+// msgName: SPECTROGRAMINFO, used to identify the message
+// snapid: ID of corresponding wideband I/Q snapshot
+// filename: Name of file
+// freqRF: The center frequency of the spectrogram
+// startFreq: The left edge of the spectrogram
+// stopFreq: The right edge of the spectrogram
+// bins: The size of the PSD, in bins
+// binResolution: Hz / bin
+// averages: how many PSDs were averaged to create a line
+// spectrogram_time: The time of the first line in the spectrogram
+message SpectrogramInfo
+{
+  optional string msgName     = 1 [default = "SPECTROGRAMINFO"];
+  optional string fileName      =   2;
+  optional double freqRF        =   3;
+  optional double startFreq     =   4;
+  optional double stopFreq      =   5;
+  optional int32 bins           =   6;
+  optional double binResolution =   7;
+  optional double averages      =   8;
+  optional string spectrogram_time = 9;
+}
+
+// Wrapper for all the possible spectrogramInfo messages
+message SpectrogramInfoEnvelope
+{
+  optional string msgName     = 1 [default = "SPECTROGRAMINFOENVELOPE"];
+  optional string snapid = 2;
+  repeated SpectrogramInfo spectrogramInfo = 3;
+}
+
+// Message sent for a single PSD that has been averaged
+//
+// msgName: SPECTROGRAMINFO, used to identify the message
+// snapid: ID of corresponding wideband I/Q snapshot
+// fileName: the name of the PSD
+// freqRF: The center frequency of the spectrogram
+// startFreq: The left edge of the spectrogram
+// stopFreq: The right edge of the spectrogram
+// bins: The size of the PSD, in bins
+// binResolution: Hz / bin
+// spectrogram_time: The time of the first line in the spectrogram
+message PSDInfo
+{
+  optional string msgName     = 1 [default = "PSDINFO"];
+  optional string fileName      =   2;
+  optional double freqRF        =   3;
+  optional double startFreq     =   4;
+  optional double stopFreq      =   5;
+  optional double binResolution =   6;
+  optional string psd_time      =   7;
+}
+
+// Wrapper for all the possible spectrogramInfo messages
+message PSDInfoEnvelope
+{
+  optional string msgName     = 1 [default = "PSDINFOENVELOPE"];
+  optional string snapid = 2;
+  repeated PSDInfo psdInfo = 3;
+}
+
+message EnergyBurstInfo
+{
+   optional string msgName     = 1 [default = "ENERGYBURSTINFO"];
+   optional double whole_sec   = 2;
+   optional double  frac_sec   = 3;
+   optional double  duration   = 4;
+   optional double  freqRF     = 5;
+   optional double  bandwidth  = 6;
+   optional double         snr = 7;
+}
+
+message EnergyBurstInfoEnvelope
+{
+   optional string msgName     = 1 [default = "ENERGYBURSTINFOENVELOPE"];
+   optional string snapid      = 2;
+   repeated EnergyBurstInfo energyBursts = 3;
+   optional double timeResSec = 4;
+   optional double freqResHz = 5;
+   optional string segmenterName = 6;
+   optional string metaFilename = 7 [default = "NONE"];
+   optional string iqIndexFilename = 8 [default = "NONE"];
+}
+
+enum ModulationType 
+{
+	NONE = 0;
+	UNKNOWN = 1;
+	LFM_UP = 2;
+	LFM_DN = 3;
+}
+
+message PDWInfo
+{
+	optional string msgName = 1 [default = "PDWINFO"];
+	optional uint64 toaWholeSec = 2; // Time of Arrival whole seconds (rel J1950)
+	optional double toaFracSec = 3; // Time of Arrival fractional seconds (rel J1950)
+	optional double pulseDur = 4; // Pulse duration (sec)
+	optional double gap = 5; // Time from end of previous pulse to this one (sec)
+	optional double freqRF = 6; // Absolute frequency of the pulse (Hz)
+	optional double bandwidth = 7; // Bandwidth (Hz)
+	optional double freqSlope = 8; // Frequency slope for LMF modulation (?)
+	optional double snr = 9; // Peak of spectrum compared to threshold
+	optional double az = 10; // Azimuth from DF (deg)
+	optional double el = 11; // Elevation from DF (deg)
+	optional double dfQ = 12; // Quality factor for DF solution
+	optional double polAR = 13; // Axial Ratio of the polarization ellipse
+	optional double polTilt = 14; // Tilt angle of the polarization ellipse
+	optional ModulationType modType = 15 [default = NONE];
+}
+
+message PDWInfoEnvelope
+{
+	optional string msgName = 1 [default = "PDWINFOENVELOPE"];
+	optional string snapid = 2; // ID of the 1st wideband Snapshot (temporary - needs something else for FPGA PPC data)
+	repeated PDWInfo pdws = 3;
+	optional string segmenterName = 4 [default = "RADAR"];
+	optional string metaFilename = 5 [default = "NONE"];
+	optional string iqIndexFilename = 6 [default = "NONE"];
+}

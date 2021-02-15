@@ -1,0 +1,26 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages for Snap Extra service
+// 
+//
+// In every message, always add the first parameter as:
+//    optional string msgName   = 1 [default = "MSG_NAME"];
+//    optional bool   isTrigger = 2 [default = true];
+//
+
+// Include message types from other files
+
+
+
+
+
+
+message SnapExtraRequest
+{
+  optional string msgName    = 1 [default = "SNAP_EXTRA_REQUEST"];
+  optional string snapName   = 2;
+}

@@ -1,0 +1,352 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for triggers in the falcon package.  These are used
+// for the ActionBlocks in falcon, or can be sent to control's ActionBlocks if
+// the necessary parameters are met.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName   = 1 [default = "MSG_NAME"];
+//    optional bool   isTrigger = 2 [default = true];
+//
+// Package used in c and java; python ignores
+package falcon_trigger_msg;
+
+// Include message types from other files
+import "FalconCommonMessages.proto";
+
+
+////
+// Notify the application that a new signal was found with a search application.
+// This will also send the BlacklistStatus and InterceptListStatus messages
+// to the remoting group if an app is launched
+//
+// msgName: INTERCEPT, used to identify the message
+// isTrigger: Included so the system can find this message
+// signal: Name of the scrypt file that was found (e.g. sp2.dat)
+// frequency: Detection RF of the signal
+// bandwidth: Bandwidth of the signal (generally from SOI list)
+// receiver: Resource identifier for the search tool's receiver.  If there are
+//           no free resources, it will prefer this receiver.
+// antenna: Resource identifier for the search tool's current antenna
+// azimuth: Azimuth of the rotor or fixed antenna
+// elevation: Elevation of the rotor
+// snr: SNR of the detected signal
+// timestamp: Intercept time (YYYY:MM:DD::HH:MM:SS)
+// searchScrypt: Scrypt name used for the search (e.g. fast_uhf_srch)
+// searchTier: If using FAST, the search tier that found the signal (1 or 2)
+// procParams: Additional parameters to help with processing
+// ssc: SSC of the feed
+// band: Band of the feed
+// polarization: Polarization of the feed
+// teamType: blue team (friendly), red team (enemy), white (infrastructure), or high priority (adversary)
+message Intercept
+{
+  // used for red/blue team distinction in INTERCEPT type messages
+  enum TeamType {
+    BLUE_TEAM = 0;      // Friendly
+    WHITE_TEAM = 1;     // Known infrastructure
+    RED_TEAM = 2;       // Known Adversary
+    HIGH_PRIORITY = 3;  // High priority known adversary
+  }
+
+  optional string  msgName      = 1 [default = "INTERCEPT"];
+  optional bool    isTrigger    = 2 [default = true];
+  optional string  signal       = 3;
+  optional double  frequency    = 4; 
+  optional float   bandwidth    = 5; 
+  optional string  receiver     = 6;
+  optional string  antenna      = 7;
+  optional float   azimuth      = 8  [default = 0];
+  optional float   elevation    = 9  [default = 0];
+  optional float   snr          = 10 [default = 0];
+  optional string  timestamp    = 11;
+  optional string  searchScrypt = 12;
+  optional int32   searchTier   = 13 [default = 1];
+  optional int32   numFrames    = 14;
+  optional string  detConf      = 15;
+  optional string  procParams   = 16;
+  optional int32   ssc          = 17 [default = -1];
+  optional string  band         = 18;
+  optional string  polarization = 19;
+  optional string  hostname     = 20 [default = ""];
+  optional string  uniqueID     = 21 [default = ""];
+  optional string  uniqueField  = 22 [default = ""];
+  optional string  gpsPosition  = 23 [default = ""]; // alt,lat,lon
+  optional bool    priming      = 24 [default = false];
+  optional string  globalID     = 25 [default = ""];
+  optional int64   feedID       = 26 [default = -1];
+  optional int64   detectionID  = 27 [default = -1];
+  optional string  receiverATN  = 28 [default = ""]; // using string to easily determine 'not provided'
+  optional TeamType teamType    = 29 [default = RED_TEAM];
+  optional bool    noProcess    = 30 [default = false];
+}
+
+////
+// Notify the application that a new signal was found with a search application.
+// This will also send the BlacklistStatus and InterceptListStatus messages
+// to the remoting group if an app is launched
+//
+// msgName: INTERCEPT, used to identify the message
+// isTrigger: Included so the system can find this message
+// signal: Name of the scrypt file that was found (e.g. sp2.dat)
+// frequency: Detection RF of the signal
+// bandwidth: Bandwidth of the signal (generally from SOI list)
+// receiver: Resource identifier for the search tool's receiver.  If there are
+//           no free resources, it will prefer this receiver.
+// antenna: Resource identifier for the search tool's current antenna
+// azimuth: Azimuth of the rotor or fixed antenna
+// elevation: Elevation of the rotor
+// snr: SNR of the detected signal
+// timestamp: Intercept time (YYYY:MM:DD::HH:MM:SS)
+// searchScrypt: Scrypt name used for the search (e.g. fast_uhf_srch)
+// searchTier: If using FAST, the search tier that found the signal (1 or 2)
+// procParams: Additional parameters to help with processing
+message InterceptAmpX
+{
+  optional string  msgName      = 1 [default = "INTERCEPT_AMPX"];
+  optional bool    isTrigger    = 2 [default = true];
+  optional string  signal       = 3;
+  optional double  frequency    = 4;
+  optional float   bandwidth    = 5;
+  optional string  receiver     = 6;
+  optional string  antenna      = 7;
+  optional float   azimuth      = 8  [default = 0];
+  optional float   elevation    = 9  [default = 0];
+  optional float   snr          = 10 [default = 0];
+  optional string  timestamp    = 11;
+  optional string  searchScrypt = 12;
+  optional int32   searchTier   = 13 [default = 1];
+  optional int32   numFrames    = 14;
+  optional string  detConf      = 15;
+  optional string  procParams   = 16;
+  optional string  hostname     = 17 [default = ""];
+  optional string  uniqueID     = 18 [default = ""];
+  optional string  uniqueField  = 19 [default = ""];
+  optional string  gpsPosition  = 20 [default = ""];
+  optional bool    priming      = 21 [default = false];
+}
+
+////
+// Trigger sent when a processing macro locks on a signal.  It can be used to
+// initiate an associate search.
+//
+// msgName: SIGNAL_LOCKED, used to identify the message
+// isTrigger: Included so the system can find this message
+// appID: Unique ID of the application processing the signal
+// antenna: Resource ID of the antenna processing the signal
+message SignalLocked
+{
+  optional string msgName   = 1 [default = "SIGNAL_LOCKED"];
+  optional bool   isTrigger = 2 [default = true];
+  optional int32  appID     = 3;
+  optional string antenna   = 4;
+}
+
+////
+// Trigger sent when a processing macro has timed out.  It can be used to
+// launch the mission on close.
+//
+// msgName: SIGNAL_TIMEOUT, used to identify the message
+// isTrigger: Included so the system can find this message
+// appID: Unique ID of the application processing the signal
+message SignalTimeout
+{
+  optional string msgName   = 1 [default = "SIGNAL_TIMEOUT"];
+  optional bool   isTrigger = 2 [default = true];
+  optional int32  appID     = 3;
+}
+
+////
+// Trigger sent to edit the intercept list or request the current state.
+// This always results in the InterceptListStatus message being sent to the
+// Remoting group.
+//
+// msgName: INTERCEPT_LIST_REQUEST, used to identify the message
+// isTrigger: Included so the system can find this message
+// requestType: Status request, remove item or clear all
+// uniqueID: If requestType is REMOVE, the uniqueID in the list to remove
+message InterceptListRequest
+{
+  enum Type {
+    STATUS = 0;
+    REMOVE = 1;
+    CLEAR = 2;
+  }
+  
+  optional string msgName     = 1 [default = "INTERCEPT_LIST_REQUEST"];
+  optional bool   isTrigger   = 2 [default = true];
+  optional Type   requestType = 3;
+  optional string uniqueID    = 4 [default = ""];
+}
+
+////
+// Trigger sent when a Go/NoGo test has been requested.
+//
+// msgName:RUN_GO_NOGO, used to identify the message
+// isTrigger: Included so the system can find this message
+message RunGoNoGo
+{
+  optional string msgName   = 1 [default = "RUN_GO_NOGO"];
+  optional bool   isTrigger = 2 [default = true];
+}
+
+////
+// Trigger sent to edit the blacklist or request the current state.  This 
+// always results in the BlacklistStatus message being sent to the Remoting
+// group.
+//
+// msgName: BLACKLIST_REQUEST, used to identify the message
+// isTrigger: Included so the system can find this message
+// requestType: Status request, add item or remove item
+// entry: BlacklistEntry message object
+// uniqueID: If requestType is REMOVE, the uniqueID in the list to remove
+message BlacklistRequest
+{
+  enum Type {
+    STATUS = 0;
+    ADD = 1;
+    REMOVE = 2;
+  }
+  
+  optional string msgName     = 1 [default = "BLACKLIST_REQUEST"];
+  optional bool   isTrigger   = 2 [default = true];
+  optional Type   requestType = 3;
+  optional falcon_common_msg.BlacklistEntry entry = 4;
+  optional string uniqueID    = 5 [default = ""];
+}
+
+////
+// Trigger sent when a PTIP message is received. Kicks off the tip
+// processing macro if current running script is of lower priority
+//
+// msgName:     PROCESS_TIP, used to identify the message
+// isTrigger:   Included so the system can find this message
+// soi:         SOI of the tip(1, 2, or 3)
+// frequency:   Frequency of the tip
+// latitude:    Latitude of the tip
+// longitude:   Longitude of the tip
+// idNumber:    ID Number
+message ProcessTip
+{
+    optional string msgName     = 1 [default = "PROCESS_TIP"];
+    optional bool   isTrigger   = 2 [default = true];
+    optional int32  soi         = 3;
+    optional double frequency   = 4;
+    optional float  latitude    = 5;
+    optional float  longitude   = 6;
+    optional double idNumber    = 7;
+}
+
+////
+// Trigger used by ServiceGeoSnap to launch an app (usually WidebandRec)
+// and manage resource allocations
+//
+// msgName:     GEO_LAUNCH, used to identify the message
+// isTrigger:   Included so the system can find this message
+// chan:        Channel to launch app on
+// cf:          Center frequency
+// az:          Azimuth
+// lat:         Latitude
+// lon:         Longitude
+// scrypt:      SOI scrypt to launch
+// rcvr_name:   Name of the receiver to launch app on
+// message_id:  Message id
+message GeoLaunch
+{
+    optional string msgName     = 1 [default = "GEO_LAUNCH"];
+    optional bool   isTrigger   = 2 [default = true];
+    optional float  cf          = 3;
+    optional int32  chan        = 4;
+    optional int32  az          = 5;
+    optional float  lat         = 6;
+    optional float  lon         = 7;
+    optional string scrypt      = 8;
+    optional string rcvr_name   = 9;
+    optional double message_id  = 10;
+}
+
+////
+// Trigger used by ServiceGeoSnap to configure AppWifi.
+// Need this separate trigger message to include 
+// launch parameters for the wifi macros.
+//
+// msgName:     WIFI_LAUNCH, used to identify the message
+// isTrigger:   Included so the system can find this message
+// infile:
+// mac:
+// frameType:
+// csvfile:
+// chan:
+// message_id:
+message WifiLaunch
+{
+    optional string  msgName     = 1 [default = "WIFI_LAUNCH"];
+    optional bool    isTrigger   = 2 [default = true];
+    optional string  infile      = 3;
+    optional string  mac         = 4;
+    optional string  frameType   = 5;
+    optional string  csvfile     = 6;
+    optional int32   chan        = 7;
+    optional double  message_id  = 8;
+}
+
+////
+// Sent when an application needs to reallocate control of resources it has
+//
+// msgName:     REALLOCATE_RESOURCES, used to identify the message
+// isTrigger:   Included so the system can find this message
+// appID:       Unique ID of the application to reallocate the resources of
+message ReallocateResources
+{
+    optional string msgName   = 1 [default = "REALLOCATE_RESOURCES"];
+    optional bool   isTrigger = 2 [default = true];
+    optional int32  appID     = 3;
+}
+
+////
+// Sent when the system should check to see if any apps are users of resources
+// that they could be controllers of
+//
+// msgName:     CONTROL_UPGRADE, used to identify the message
+// isTrigger:   Included so the system can find this message
+message ControlUpgrade
+{
+    optional string msgName   = 1 [default = "CONTROL_UPGRADE"];
+    optional bool   isTrigger = 2 [default = true];
+}
+
+////
+// Trigger used by standby mode to activate/deactivate mechanical
+// switch in RFCU.  This is a RAID 2 only fix.
+//
+// msgName:     RFCU_SWITCH, used to identify the message
+// isTrigger:   Included so the system can find this message
+// switchPos:   Switch position, diode or antenna
+
+message RfcuSwitch
+{
+    optional string  msgName     = 1 [default = "RFCU_SWITCH"];
+    optional bool    isTrigger   = 2 [default = true];
+    optional int32     standbyState   = 3;
+}
+
+////
+// Trigger sent when a Talon Grizzly Doppler Tip is received.  Kicks 
+// off the doppler tip processing.  This should occur on a free channel
+// if available, otherwise temporarily pause search.
+//
+// msgName:     TG_DOPPLER_TIP, used to identify the message
+// isTrigger:   Included so the system can find this message
+// sigUUID: generated UUID for this signal
+// frequency:   Frequency of the tip
+message TGDopplerTip
+{
+    optional string msgName     = 1 [default = "TG_DOPPLER_TIP"];
+    optional bool   isTrigger   = 2 [default = true];
+    optional string globalID    = 3; 
+    optional double frequency   = 4;
+}

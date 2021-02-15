@@ -1,0 +1,41 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package sit_post_msg;
+
+////
+// Request a detection of a frequency hopper in a snapshot
+// Response: detectFhopResponse
+////
+message detectFhopRequest
+{
+    optional string msgName = 1 [default = "detectFhopRequest"];
+    required string requestID = 2;
+    // ID of file containing the clusters
+    required string iqSnap = 3;
+    required double confidenceThreshold = 4;
+}
+
+////
+// Request that a cluster be added to the Soilist
+////
+message add2SoilistRequest
+{
+   optional string msgName = 1 [default = "add2SoilistRequest"];
+   required string requestID = 2;
+   required int32 clusterID = 3;
+   required string targetIdentifier = 4;
+}
+
+////
+// Request to write a jam file
+////
+message generateJamFileRequest
+{
+   optional string msgName = 1 [default = "generateJamFileRequest" ];
+   required string requestID = 2;
+   required int32 clusterID = 3;
+   required string targetIdentifier = 4;
+}

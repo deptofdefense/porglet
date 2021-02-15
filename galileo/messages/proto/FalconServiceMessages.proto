@@ -1,0 +1,636 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for services in the falcon package.  These are
+// populated by your service's configureMessage() method.  This static
+// method is used so that control does not need to know what services are
+// available until runtime, removing the need for you to modify control to
+// add a new service.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_svc_msg;
+
+// Import common messages
+import "FalconCommonMessages.proto";
+
+////
+// Configuration parameters to send the characterizer manager.  These are
+// populated by ServiceCharManager.configureMessage() and from services.xml.
+//
+// msgName: CHAR_MAN_CONFIG, used to identify the message
+// xtalkCharReq: Incoming characterizer request message Crosstalk queue
+// xtalkCharAns: Basename for outgoing results Crosstalk queue
+// snapExtraCount: Number of Snap Extra processes to maintain per machine
+// snapExtraMin: Minimum number of Snap Extra processes to maintain per machine
+// snapExtraConfig: Configuration file for Snap Extra
+// snapExtraDynamic: Enables dynamic reallocation of Snap Extra
+// outputPath: Path or aux number of Snap Extra results
+// esiCount: Number of ESI characterizer processes to maintain
+// esiLogPath: Location for the ESI logs
+// videoRateFFTSize: FFT size to use for initial PSD detection
+// videoRateDCHz: Number of Hz to ignore at DC for detection
+// videoRateMaxFFT: Maximum number of FFTs to average
+// videoRateThresh: Threshold to use for the initial PSD detection
+// videoSyncThresh: Threshold to use for the later Sync detection
+// snapExtraTargets: list of target machines
+// esiModulations: Comma-separated list of ESI modulations
+// edWritePath: Path or aux number of detection reports (type 3000 files) *Not Implemented*
+// edLogPath: Location for the energy detector logs
+// edCount: Number of energy detector processes to maintain
+// streamFiles: Are we looking for streamed files
+message CharManConfig
+{
+  optional string  msgName          = 1 [default = "CHAR_MAN_CONFIG"];
+  optional int32   xtalkPort        = 2 [default = 32222];
+  optional int32   snapExtraCount   = 3 [default = 1];
+  optional int32   snapExtraMin     = 4;
+  optional string  snapExtraConfig  = 5 [default = "/user/config/snap_extra.cfg"];
+  optional bool    snapExtraDynamic = 6;
+  optional bool    sepriopt         = 7;
+  optional int32   sr_to            = 8;
+  optional string  outputPath       = 9 [default = "19"];
+  optional int32   esiCount         = 10 [default = 6];
+  optional string  esiLogPath       = 11;
+  optional int32   videoRateFFTSize = 12 [default = 131072];
+  optional float   videoRateDCHz    = 13 [default = 100];
+  optional int32   videoRateMaxFFT  = 14 [default = 64];
+  optional float   videoRateThresh  = 15 [default = 1.5];
+  optional float   videoSyncThresh  = 16 [default = 2.5];
+  optional string  rlVersion        = 17 [default = "NORMAL"];
+  optional bool    rlDedup          = 18 [default = true];
+
+  optional int32   energyNcoh       = 19 [default = 20];
+  optional int32   energyNnoncoh    = 20 [default = 100];
+  optional float   energyThreshold  = 21 [default = 0];
+  optional int32   energyNon        = 22 [default = 2];
+  optional int32   energyNoff       = 23 [default = 2];
+  optional float   energyBW         = 24 [default = 20000];
+
+  optional float   ofdmthresh       = 25 [default = 5.0];
+
+  optional float   priThreshold     = 26 [default = 11.0];
+
+  repeated string  snapExtraTargets = 27;
+  optional string  esiModulations   = 28;
+  optional string  esiWritePath     = 29 [default = ""];
+
+  optional string  edWritePath      = 30 [default = ""];
+  optional string  edLogPath        = 31 [default = ""];
+  optional int32   edCount          = 32 [default = 6];
+  optional int32   edThreshdB       = 33;
+  optional int32   edSpAvg          = 34 [default = 50];
+  optional int32   edFFTSize        = 35 [default = 8192];
+  optional int32   edDetBW          = 36;
+  optional int32   edMinDetBW       = 37 [default = 8000];
+  optional int32   edGuardBW        = 38 [default = 0];
+  optional int32   edMinUpTime      = 39;
+  optional int32   edMinDownTime    = 40;
+  optional float   edOverlapTh      = 41 [default = 0.5];
+
+  optional bool    streamFiles      = 42 [default = false];
+  optional string  brainFile        = 43;
+}
+
+//
+// Added from FalconApplicationMessages in attempts to move AppRTHopAnalysis to a Service
+// NCZ
+message MacroOptions
+{
+  enum AutoControl {
+    HEADLESS   = 0;
+    CONTROLLED = 1;
+    AUTO_MODE  = 2;
+  }
+
+  enum PPS {
+    PPS_OFF = 0;
+    PPS_ON = 1;
+  }
+
+  enum Ref10m {
+    REF_OFF = 0;
+    REF_ON  = 1;
+  }
+
+  enum ExportFlags {
+    ENABLE_NONE = 0;
+    ENABLE_VIDEO = 1;
+    ENABLE_JPEGS = 2;
+    ENABLE_PSD = 4;
+    ENABLE_WORKSTATION = 8;
+  }
+
+  optional AutoControl autoControl = 1;
+  optional PPS    ppsEnable    = 2 [default = PPS_OFF];
+  optional Ref10m refEnable    = 3 [default = REF_OFF];
+  optional double ifFrequency  = 4 [default = 30e6];
+  optional int32  writeAux     = 5 [default = 12];
+  optional int32  exportEnable = 6 [default = 0];
+  optional int32  videoLength  = 7 [default = 20];
+  optional string sensorName   = 8 [default = "sensor"];
+  optional string psdIPAddress = 9 [default = ""];
+  optional int32  psdPeriod    = 10 [default = 200];
+  optional int32  jpegPeriod   = 11 [default = 50];
+  optional int32  xmlPeriod    = 12 [default = 5];
+  optional int32  protectArch  = 13 [default = 0];
+  optional bool midasBundling  = 14 [default = false];
+  optional int32  remoteThresh = 15 [default = 10];
+};
+
+////
+// Configuration parameters to send Falcon Vision.  These are populated
+// by ServiceFalconVision.configureMessage() and from services.xml.
+//
+// msgName: FALCON_VISION_CONFIG, used to identify the message
+// readPort: Port for the message read socket from remoting sites
+// writePort: Port for the message write socket to remoting sites
+// msgBufLen: Length of the message buffer to allocate
+// xmlEnable: Enable or disable XML event output
+// xmlClass: Classification for XML files
+// xmlSource: Source string for XML files
+// xmlPath: Output path string or aux number to put XMLs
+// xmlPeriod: Only write a GPS message every xmlPeriod seconds at most
+message FalconVisionConfig
+{
+  optional string msgName              = 1 [default = "FALCON_VISION_CONFIG"];
+  optional int32  readPort             = 2;
+  optional int32  writePort            = 3;
+  optional int32  msgBufLen            = 4;
+  optional bool   xmlEnable            = 5;
+  optional string xmlClass             = 6;
+  optional string xmlSource            = 7;
+  optional string xmlPath              = 8;
+  optional string xmlWorkstation       = 9;
+  optional int32  xmlPeriod            = 10;
+  optional string workstationWhitelist = 11;
+}
+
+////
+// Configuration parameters to send GSL Manager.  These are populated
+// by ServiceGSLManager.configureMessage() and from services.xml.
+//
+// msgName: GSL_MANAGER_CONFIG, used to identify the message
+message GSLManagerConfig
+{
+  optional string msgName             = 1 [default = "GSL_MANAGER_CONFIG"];
+  optional string dbname              = 2;
+  optional string dbuser              = 3;
+  optional string dbhost              = 4;
+  optional int32  globalSignalTimeout = 5;
+}
+
+////
+// Configuration parameters sent to the extra fork service.  These are populated
+// by ServiceExtraFork.configureMessgae() and from services.xml.
+//
+// msgName: EXTRA_FORK_CONFIG, used to identify the message
+// channels: List of channels to manage with this service instance
+message ExtraForkConfig
+{
+  optional string msgName = 1 [default = "EXTRA_FORK_CONFIG"];
+  repeated falcon_common_msg.ExtraForkChannel channels = 2;
+}
+
+////
+// Configuration parameters to send the GPS monitor.  These are populated
+// by ServiceGPSMonitor.configureMessage() and from services.xml.
+//
+// msgName: GPS_MONITOR_CONFIG, used to identify the message
+// gpsServer: If we are using NMEA Parser for gps
+// GPSIP: IP value of the GPS Server
+// gpsPort: Port value of the gps server
+// gpsPer: How ofter updated lat/lon/heding value is sent to message group
+message GPSMonitorConfig
+{
+  optional string msgName       = 1 [default = "GPS_MONITOR_CONFIG"];
+  optional string gpsServer     = 2 [default = "OFF"];
+  optional string GPSIP         = 3;
+  optional int32  gpsPort       = 4;
+  optional int32  gpsPer        = 5 [default = 5];
+  optional int32  gpsWriteFile  = 6 [default = 1];
+  optional int32  gpsFileInt    = 7 [default = 10];
+}
+
+////
+// Configuration parameters to turn on/off Falcon Utilties. These
+// are populated by FalconUtilites.configureMessage() and from service.xml.
+//
+// msgName: FALCON_UTILTIES_CONFIG, used to identify the message
+// archive: To manage the existence/ability to clear archive files
+// delArchives: to delete archive files at shutdown
+message FalconUtilitiesConfig
+{
+  optional string msgName       = 1 [default = "FALCON_UTILITIES_CONFIG"];
+  optional string archive       = 2 [default = "OFF"];
+  optional string delArchives   = 3 [default = "OFF"];
+}
+
+////
+//
+// msgName: FALCON_UTILTIES_CONFIG, used to identify the message
+// archive: To manage the existence/ability to clear archive files
+message RTHopAnalysisConfig
+{
+  optional string msgName   = 1 [default = "RTHOP_ANALYSIS_CONFIG"];
+  optional string scrypt    = 2 [default = "/user/scrypts/rthops.xml"];
+}
+
+////
+// Configuration parameters to send GeoSnap.  These are populated
+// by ServiceGeoSnap.configureMessage() and from services.xml.
+//
+// msgName: GEO_SNAP_CONFIG, used to identify the message
+// geo_enabled: ON / OFF.  This value will get converted to 1 / -1
+//             in the processing macro configuration.
+// auto_launch:
+// temp_write_aux:
+// antenna:
+// mission:
+// path:
+// rx_path_delay:
+// rx_site:
+// feed_lat:
+// feed_lon:
+// feed_alt:
+// system_foa_sigma:
+// system_toa_sigma:
+// desired_interpolation:
+// use_sv_keywords:
+// skip_camel_tranfer:
+// posx:
+// posy:
+// posz:
+message GeoSnapConfig
+{
+  optional string  msgName               = 1 [default = "GEO_SNAP_CONFIG"];
+  optional string  geo_enabled           = 2 [default = "OFF"];
+  optional string  auto_launch           = 3 [default = "ON"];
+  optional int32   temp_write_aux        = 4;
+  optional string  antenna               = 5;
+  optional string  mission               = 6;
+  optional string  path                  = 7;
+  optional int32   rx_path_delay         = 8;
+  optional int32   rx_site               = 9;
+  optional float   feed_lat              = 10;
+  optional float   feed_lon              = 11;
+  optional float   feed_alt              = 12;
+  optional float   system_foa_sigma      = 13;
+  optional float   system_toa_sigma      = 14;
+  optional string  desiredinterpolation  = 15;
+  optional int32   use_sv_keywords       = 16;
+  optional string  skip_camel_transfer   = 17 [default = "OFF"];
+  optional float   posx                  = 18;
+  optional float   posy                  = 19;
+  optional float   posz                  = 20;
+  optional string  default_geo_app       = 21;
+}
+
+////
+// Configuration Parameters for servicetalongrizzly
+//
+// msgName: TG_CONFIG
+// geoTest: enables a mode which will attempt to prioritize
+//          external geos of targets which produce telemtry
+//          data for comparison
+message TGConfig
+{
+  optional string  msgName               = 1 [default = "TG_CONFIG"];
+  optional string  geo_test              = 2 [default = "OFF"];
+  optional int32   telem_timeout         = 3 [default = 400];
+  optional string  geo_pri_file          = 4;
+  optional int32   state_timeout         = 5 [default = 60];
+}
+
+////
+// Configuration parameters to send EventHandler.  These are populated
+// by ServiceEventHandler.configureMessage() and from services.xml.
+//
+// msgName: EVENT_HANDLER_CONFIG, used to identify the message
+// xmlEnable: Enable or disable XML event output
+// xmlClass: Classification for XML files
+// xmlSource: Source string for XML files
+// xmlPath: Output path string or aux number to put XMLs
+// xmlPeriod: Only write a GPS message every xmlPeriod seconds at most
+// xmlGeoThreshold: Only send out geos with a major axis less than this in m
+// workstationWhitelist: Filename of the workstation whitelist xml file
+// telemTimeout: Timeout to switch to geo points
+// geoTimeout: timeout to create sigdn after geos havent been received
+// tagOverrideFile: Filename of the tag override lookup file
+message EventHandlerConfig
+{
+  optional string msgName                = 1 [default = "EVENT_HANDLER_CONFIG"];
+  optional bool   xmlEnable              = 2;
+  optional string xmlClass               = 3;
+  optional string xmlSource              = 4;
+  optional string xmlPath                = 5;
+  optional string xmlWorkstation         = 6;
+  optional int32  xmlPeriod              = 7;
+  optional int32  xmlGeoThreshold        = 8;
+  optional string xmlGeoFilterFile       = 9;
+  optional string workstationWhitelist   = 10;
+  optional int32  telemTimeout           = 11 [default = 300];
+  optional int32  geoTimeout             = 12 [default = 300];
+  optional string tagOverrideFile        = 13;
+}
+
+////
+// Configuration parameters to send GPSFaker.  These are populated
+// by ServiceGPSFaker.configureMessage() and from services.xml.
+//
+// msgName: GPS_FAKER_CONFIG, used to identify the message
+// gpsFile: Source file for GPS points
+message GPSFakerConfig
+{
+  optional string msgName                = 1 [default = "GPS_FAKER_CONFIG"];
+  optional string gpsFile                = 2;
+}
+
+
+////
+// Configuration parameters to send Skyscraper.  These are populated
+// by ServiceSkyscraper.configureMessage() and from services.xml.
+//
+// msgName: SKYSCRAPER_CONFIG, used to identify the message
+// directory: the directory that contains the server binary
+// filename: the filename of the server binary
+message SkyscraperConfig
+{
+  optional string msgName                = 1 [default = "SKYSCRAPER_CONFIG"];
+  optional string directory              = 2;
+  optional string filename               = 3;
+
+}
+////
+// Configuration parameters to send the noise test app.  These are
+// populated by NoiseTest.configureMessage() and from applications.xml.
+//    NCZ
+// msgName: NOISE_TEST_CONFIG, used to identify the message
+// options: Common macro options
+message NoiseTestConfig
+{
+  optional string msgName = 1 [default = "NOISE_TEST_CONFIG"];
+  optional MacroOptions options = 2;
+}
+
+message ExtraScriptConfigMess
+{
+  optional string msgName   = 1 [default = "EXTRASCRIPTCONFIGMESS"];
+  optional string script    = 2;
+}
+
+message NoConfigMess
+{
+  optional string msgName = 1 [default = "NOCONFIGMESS"];
+}
+
+message PentekConfigMess
+{
+  optional string msgName = 1 [default = "EXTRASCRIPTCONFIGMESS"];
+  optional float txSampleRate = 2;
+}
+
+message PredTunerConfig
+{
+  optional string msgName      = 1 [default = "PREDTUNER_CONFIG"];
+  optional int32  numTuners    = 2;
+  optional int32  arcfilenum   = 3;
+  optional int32  arcfilesize  = 4;
+  optional string config       = 5;
+  optional int32 startTunerNum = 6;
+}
+
+////
+// Configuration parameters for starting USRP SDRs. These are populated
+// by ServiceTransceier.configureMessage() and from usrp-sdrs.xml.
+//
+//     msgName: TRANSCEIVER_CONFIG, used to identify the message
+// arcFileSecs: Desired length of RX snapshots in seconds
+message PredTransceiverConfig
+{
+  optional string msgName              =  1 [default = "TRANSCEIVER_CONFIG"];
+  optional int32  snapshotRingCapacity =  2 [default = 50];
+  optional int32  numTuners            =  3;
+  optional int32  numTransmitters      =  4;
+  optional int32  startTunerNum        =  5;
+  optional string ipaddr               =  6;
+  optional string hwType               =  7 [default = "USRP"];
+  optional float  rxSampleRate         =  8 [default = 25e6];
+  optional float  txSampleRate         =  9 [default = 100e6];
+  optional string usrpClockSource      = 10 [default = "internal"];
+  optional string usrpTimeSource       = 11 [default = "internal"];
+  optional string fft                  = 12 [default = "false"];
+  optional float  arcFileSecs          = 13 [default = -1];
+}
+
+message SidekiqTransceiverConfig
+{
+  optional string msgName              = 1 [default = "SIDEKIQTRANSCEIVER_CONFIG"];
+  optional int32 snapshotRingCapacity  = 2 [default = 50];
+
+  optional int32 rxA1                  = 3 [default = -1];
+  optional int32 rxA2                  = 4 [default = -1];
+  optional int32 rxB1                  = 5 [default = -1];
+  optional int32 rxB2                  = 6 [default = -1];
+  optional int32 txA1                  = 7 [default = -1];
+  optional int32 txA2                  = 8 [default = -1];
+  optional int32 txB1                  = 9 [default = -1];
+  optional int32 txB2                  = 10 [default = -1];
+  // Enable/disable PPCs on each receiver. The Sidekiq service must query the
+  //  FPGA to determine the # of channels as that is not configurable, but
+  //  it could change with firmware loads
+  optional bool ppcA1                 = 11 [default = false];
+  optional bool ppcA2                 = 12 [default = false];
+  optional bool ppcB1                 = 13 [default = false];
+  optional bool ppcB2                 = 14 [default = false];
+  // Each Sidekiq has an ID starting with 0
+  optional string cardID              = 15 [default = "0"];
+  // The A and B transceivers can have different sample rates (software
+  //  may not yet support this)
+  optional float sampleRateA          = 16 [default = 50e6];
+  optional float sampleRateB          = 17 [default = 50e6];
+  // Energy detection thresholds dBm and # of samples required
+  //  to trigger an energy detection for A and B transceivers
+  optional float energyThreshA        = 18 [default = -70];
+  optional float energyThreshB        = 19 [default = -70];
+  optional int32 energyThreshNumA     = 20 [default = 200];
+  optional int32 energyThreshNumB     = 21 [default = 200];
+  optional int32 rxBufferSize         = 22 [default = 512];
+  optional int32 debuglvl             = 23 [default = 0];
+  optional bool externalReference     = 24 [default = true];
+}
+
+message MMSTunerConfig
+{
+  optional string msgName      = 1 [default = "MMSTUNERCONFIG"];
+
+  optional int32 snapshotRingCapacity = 2 [default = 50];
+
+  optional int32 channel       = 3;
+  optional string ip           = 4;
+  optional string interface    = 5;
+  optional float bandwidth     = 6;
+
+  // Sample rate of the stream. Unit: Hz.
+  //
+  // Viable values can be computed by e.g.:
+  //
+  // 1.  Determining the unit's "BASE_FS" with e.g. `WBDDC:0 ISR?` a la
+  //     [`MMSCtrl.get_wbddc_fs`](http://git.udev.local/xm/mms/blob/1ac1105/lib/mmslib/mms_ctrl.cc#L4084-4106).
+  // 2.  Determining the unit's supported decimations with e.g. `WBDDC:0 DECL?` a la
+  //     [`MMSCtrl.get_wbddc_decl`](http://git.udev.local/xm/mms/blob/1ac1105/lib/mmslib/mms_ctrl.cc#L2679-2757).
+  //
+  // For the receivers used in the Corians (i.e. model `0660-D` i.e. "IDN?" = `MSDD-0660D-V,1232,MMSSPC-160915,160715`)
+  // this can be 33.333 MHz (though non-power-of-two decimations will fail within the software), 25 MHz, or 6.25 MHz.
+  optional float sampleRate = 7;
+
+  // The (1-indexed) index of the receiver within the MMS control unit. Corresponds to e.g. the `hw_mms;mms/RCVRNUM`
+  // switch. For the Corians this will be either 1 or 2.
+  optional int32 mmsRcvrNum = 8;
+
+  // FFT Enable: We are going to have two different function calls to
+  // the MMS - one that has FFTs (fftmms) and one that doesnt (sourcemms)
+  optional bool usehwffts     = 9 [default = false];
+
+  // Enable the MMS watchdog service for the specified receiver. In brief, this (hopefully) allows us to semi-gracefully
+  // recover from the random MMS crashes where it will just totally stop responding to commands, thus requiring a hard
+  // reset.
+  //
+  // REVIEW: The controlled functionality in `QServiceMMSTuner` was semi-adopted from the related functionality in
+  //   http://git.udev.local/xm/mms/blob/109fbae/comp_status_server.py. Arguably this could be pulled out to a separate
+  //   service (possibly a system-level service, i.e. independent of "the full software set"). It's all such a hack,
+  //   though, that I'm not sure _what_ to do with it.
+  //
+  // XXX: Really only needs to be set for one "channel" in each "receiver", but setting it for more does not cause any
+  //   issues.
+  optional bool mmsWatchdogEnabled = 10 [default = true];
+
+  // Time period between MMS watchdog pets at which a warning is logged. Unit: seconds.
+  optional float mmsWatchdogPetDeltaWarningThreshold = 11 [default = 20.0];
+
+  // How often to call `hw_mms;mms` with the `WDP` command. Unit: seconds.
+  optional float mmsWatchdogPetInterval = 12 [default = 5.0];
+
+  // Passed to `hw_mms;mms` with the `WDS` commands. Unit: seconds.
+  optional int32 mmsWatchdogTimeout = 13 [default = 30];
+
+  optional bool xpipemonitorEnabled = 14 [default = false];
+}
+
+////
+//
+// msgName: DFServiceConfig
+message DFServiceConfig
+{
+  optional string msgName         = 1 [default = "DFSERVICECONFIG"];
+  optional int32 interceptTimeout = 2 [default = 300];
+  optional int32 sigupTimeout     = 3 [default = 7200];
+  optional int32 sigdownTimeout   = 4 [default = 120];
+  optional string additionalBox1  = 5;
+  optional string additionalBox2  = 6;
+}
+
+message TechniqueConfig
+{
+  optional string msgName        =  1 [default = "TECHNIQUECONFIG"];
+  optional string platform       =  2;
+  optional string method         =  3;
+  optional string script         =  4;
+  optional float samplerate      =  5;
+  optional float inputsamplerate =  6;
+  optional string host           =  7;
+  optional int32 port            =  8;
+  optional float if_freq         =  9 [default = 0];
+  optional float estimatedRFMHz  = 10 [default = 433.0];
+  optional int32 overrideChannel = 11 [default = -1];
+  // `<DERIVE>` or a GUID (in hex). See
+  // [the `capability` option for `ThunderbirdTechnique::_buildEWCapabilityMessage`](http://git.udev.local/xm/tacew/blob/a98dce20/python/tbtechnique.py#L720-721)
+  // for details.
+  optional string capabilityId = 12 [default = "<DERIVE>"];
+}
+
+message RulesEngineConfig
+{
+    optional string msgName  = 1 [default = "RULESENGINECONFIG"];
+    repeated string xmlRules = 2;
+}
+
+message DatabaseKeeperConfig
+{
+  optional string msgName      = 1 [default = "DATABASEKEEPERCONFIG"];
+  optional int32 writeInterval = 2 [default = 1];
+  optional bool disableWrite   = 3 [default = false];
+}
+
+message KeplerUIConnectionConfig
+{
+  optional string msgName = 1 [default = "KEPLERUICONNECTIONCONFIG"];
+}
+
+message SensorStatusConfig
+{
+  optional string msgName   = 1 [default = "SENSORSTATUSCONFIG"];
+  optional float  lat       = 2;
+  optional float  lon       = 3;
+  optional float  alt       = 4;
+  optional string siteId    = 5;
+  optional string sigAd     = 6;
+  optional float  elevation = 7;
+  optional float  azimuth   = 8;
+  optional float  beamWidth = 9;
+  optional float  boreSite  = 10;
+}
+
+message GeoTipperConfig
+{
+    optional string msgName       = 1 [default = "GEOTIPPERCONFIG"];
+    repeated string sensorName    = 2;
+    optional int64  lookBack      = 3 [default = 2];
+    optional bool   autoAdjust    = 4 [default = false];
+    optional int64  queryInterval = 5 [default = 1];
+    optional int64  tipTimeout    = 6 [default = 2];
+}
+
+message PreDClipperConfig
+{
+  optional string msgName  = 1 [default = "PREDCLIPPERCONFIG"];
+  optional string fileHost = 2;
+}
+
+message AmplifierConfig
+{
+  optional string msgName = 1 [default = "AMPLIFIERCONFIG"];
+  optional string name    = 2;
+  optional string ip      = 3;
+  optional int32 port     = 4;
+}
+
+message SiggenConfig
+{
+  optional string msgName = 1 [default = "SIGGENCONFIG"];
+  optional string type    = 2;
+  optional int32 chan     = 3;
+  optional string ip      = 4;
+  optional float freqMHz  = 5;
+  optional float powerdBm = 6;
+}
+
+message CurrPosConfig
+{
+  optional string msgName          =  1 [default = "CURRPOSCONFIG"];
+  optional string hostname         =  2;
+  optional int32 port              =  3;
+  optional string method           =  4;
+  optional string ins_hostname     =  5;
+  optional int32 ins_port          =  6;
+  optional bool orientation_enable =  7 [default = false];
+  optional bool vector_enable      =  8 [default = false];
+  optional float sim_lat           =  9;
+  optional float sim_lon           = 10;
+  optional float sim_alt           = 11;
+}

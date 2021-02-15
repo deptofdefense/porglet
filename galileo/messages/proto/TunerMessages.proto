@@ -1,0 +1,354 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package tuner_msg;
+
+// Used to start the scan from the beginning. 
+// Set flag snapreset to 1 to restart scan. 
+// Taken from ADJSCAN Midas message from fasttune.cc
+message AdjustScan
+{
+  optional string msgName     = 1 [default = "ADJUSTSCAN"];
+  optional double dwtime      = 2;
+  optional int32  ftupdate    = 3;
+  optional int32  mode        = 4;
+  optional int32  revid       = 5;
+  optional string feed        = 6;
+  optional double az          = 7;
+  optional double foffset     = 8;
+  optional int32  snapreset   = 9;
+}
+
+// Manual Archive Message 
+// used to tune to freq and write to filename 
+// for duration seconds long.
+message ManArch
+{
+  optional string msgName     = 1 [default = "MANARCH"];
+  optional double freq        = 2;
+  optional double duration    = 3;
+  optional string filename    = 4;
+}
+
+// This got taken from another fast Midas Message.
+// Time archive not completely sure the difference with ManArch
+//
+message TArch
+{
+  optional string msgName     = 1 [default = "TARCH"];
+  optional double duration    = 2;
+  optional double frequency   = 3;
+  optional double start       = 4;
+  optional double startf      = 5;
+  optional double tasknum     = 6;
+  optional int32  revid       = 7;
+  optional double foffset     = 8;
+}
+
+
+// This is the common 'meta-data' for an I/Q snap
+// msgName: INTERCEPT, used to identify the message
+// freqRF: Frequency keyword of the file made
+// snapid: unique id of snapid that will be committed to database
+// channel: receiver number 
+// filename: name for file that just got committed to the database
+// feedid: name of the feed
+// rcvrid: unique rcvr name
+// sample_rate: Sample rate for file
+// duration: Duration of file
+// ramsnap_time: Timestamp for file (ISO8601-fomratted)
+// hostname: Name of sensor which generated the file
+// bandwidth: Bandwidth of the snapshot <= sample_rate
+// derived: False if directly from the receiver, True if channelized data or otherwise
+message IQHeaderInfo
+{
+  optional string msgName     = 1 [default = "IQHEADERINFO"];
+  optional double freqRF      = 2; 
+  optional string snapid      = 3;
+  optional int32  revid       = 4; // DEPRECATED
+  optional int32  tasknum     = 5; //DEPRECATED
+  optional int32  channel     = 6;
+  optional string filename    = 7;
+  optional string feedid      = 8; // DEPRECATED (See IQMetaData message)
+  optional string rcvrid      = 9; // DEPRECATED (See IQMetaData message)
+  optional double sample_rate = 10;
+  optional double duration    = 11; // DEPRECATED (See IQMetaData message)
+  optional string ramsnap_time = 12; // DEPRECATED (See IQMetaData message)
+  optional string hostname    = 13 [default = 'None']; // DEPRECATED (See IQMetaData message)
+  optional double bandwidth   = 14;
+  optional bool derived = 15 [default=false]; // DEPRECATED
+  optional string parentSnapID = 16; // DEPRECATED
+  // Specify the filepath
+  optional string basePath    = 17 [default = '/var/lib/kepler/snapshots/'];
+  optional string fileExtension     = 18 [default = '.tmp'];
+
+  // Offset (in bytes) where the data section starts (in the file pointed to by `#filename`).
+  optional uint64 fileDataOffset = 51;
+
+  // Length (in bytes) of the data section (in the file pointed to by `#filename`).
+  optional uint64 fileDataSize = 52;
+
+}
+
+message IQMetaData 
+{
+
+    // Center frequency (Hz) across all I/Q snaphots contained in the SNAPINFO message.
+    optional double freqCf = 1; 
+    // Minimum frequency (Hz) across all I/Q snaphots contained in the SNAPINFO message.
+    optional double freqMin = 2; 
+    // Maxmimum frequency (Hz) across all I/Q snaphots contained in the SNAPINFO message.
+    optional double freqMax = 3;
+    // Duration (sec) of each I/Q snapshot. Note -- all snapshots _must_ have the same
+    // duration 
+    optional double duration = 4;
+    // Timestamp (ISO 8601-format) of each I/Q snapshot. Note -- all snapshots _must_ have the same
+    // timestamp (e.g. must be syncronously gated)
+    optional string ramsnapTime = 5;
+    // Hostname (e.g. kepler01) of the sensor reporting the message
+    optional string hostname =  6;
+    // Feed identifier for I/Q snapshot. 
+    optional string feedId = 7; 
+    // Receiver ID / enumeration for I/Q snapshot
+    optional string rcvrId = 8;
+}
+
+// Message sent to broadcast that an I/Q file is available
+// IQHeader: I/Q Metadata information
+// parentSnapID: UUID of parent ramsnap
+message SnapInfo
+{
+  optional string msgName     = 1 [default = "SNAPINFO"];
+  // DEPRECATED - Replaced by iqHeaders field below.
+  optional IQHeaderInfo IQHeader = 2;
+  // A list of all the I/Q snaphots contained in this snapinfo message. The field is 
+  // repeated to support channelized data. 
+  // IMPORTANT NOTE: I/Q snapshots _must_ be syncronously gated and of the same duration
+  repeated IQHeaderInfo iqHeaders = 3;
+  // Metadata describing the repeated I/Q snaphots
+  optional IQMetaData iqMetaData = 4;
+}
+
+// Changing Scan Range of the Receivers and duration and step of each tune
+//
+// msgName: CHANGETUNERANGE
+// channel: number of receiver that the scan wants to change
+// appID: ID of the app making the request
+// tunePlan: Repeated TuneRange message defining the requested scans
+// allowOverlap: Do we allow overlap with other scans
+message ChangeTuneRange
+{
+  optional string msgName     = 1 [default = "CHANGE_TUNE_RANGE"];
+  optional int32  channel     = 2 [default = -1];
+  optional int32  appID       = 3;
+  repeated TuneRange tunePlan = 4;
+  optional bool   allowOverlap = 5 [default = true];
+}
+
+// Used by ChangeTuneRange to allow multiple ranges
+//
+// msgName: used to identify the message
+// startRf: start of the frequency scan range
+// endRf: end of the frequency scan range
+// step: frequency step size (MHz)
+// duration: duration of recording (s)
+// gain: receiver gain...not sure if we're going to use this
+// atten: receiver attenuation, if available
+// appID: App ID for the range, repeated due to overlap potential
+message TuneRange
+{
+  optional string msgName     = 1 [default = "TUNE_RANGE"];
+  optional double startRf     = 2;
+  optional double endRf       = 3;
+  optional double step        = 4;
+  optional double duration    = 5;
+  optional double gain        = 6;
+  optional int32  atten       = 7;
+  optional float  bwMHz       = 8 [default = 20];
+  repeated int32  appID       = 9;
+}
+
+// Query Response to Spectrum Viewer. Gives basic status on what the receiver is
+// currently doing
+//
+// msgName: RECEIVERSTATUS
+// channel: number of receiver that the scan wants to change
+// startRf: start of the frequency scan range
+// endRf: end of the frequency scan range
+// step: frequency step size (MHz)
+// duration: duration of recording (s)
+// gain: receiver gain...not sure if we're going to use this
+// status: Status of Rx
+message ReceiverStatus
+{
+  enum Status {
+    SCANNING = 1;
+    DWELLING = 2;
+    OFF      = 3;
+  }
+
+  optional string msgName     = 1 [default = "RECEIVERSTATUS"];
+  optional int32  channel     = 2;
+  repeated TuneRange tunePlan = 3;
+  optional double currentFrequency = 4;
+  optional Status status      = 5 [default = OFF];
+}
+
+// Query message from Spectrum Viewer to a receiver.  Expect a ReceiverStatus message back
+//
+message QueryReceiverStatus
+{
+  optional string msgName     = 1 [default = "QUERYRECEIVERSTATUS"];
+  optional int32  channel     = 2;
+}
+
+// Used to compare the MMS timing to system database timing.  In TRFE timing is crucial 
+// and if they database and MMS are slightly off the architecture breaks down.
+//
+message TimingCheck
+{
+  optional string msgName     = 1 [default = "TIMINGCHECK"];
+  optional int32  channel     = 2;
+  optional string timing      = 3;
+}
+
+// Message to tell MMS to go dwell on a frequency
+//
+// msgName: used to identify the message
+// channel: Channel for the scan to be on
+// freqMHz: Frequency to record
+// bwMHz: Bandwidth to record
+// duration: Duration to record for. -1 is an infinite duration
+// state: State of the request. Dwell or Stop
+// appID: App ID of app making the request
+// mergeFile: Merge the files when duration is complete
+message DwellScan
+{
+  enum State{
+    START = 0;
+    DWELL = 1;
+    STOP  = 2;
+  }
+
+  enum GainMode{
+    AGC = 0;
+    MANUAL = 1;
+  }
+
+  optional string msgName     = 1 [default = "DWELLSCAN"];
+  optional int32  channel     = 2;
+  optional float  freqMHz     = 3;
+  optional float  gaindB      = 4;
+  optional float  bwMHz       = 5 [default = 20];
+  optional float  duration    = 6 [default = -1];
+  optional State  state       = 7 [default = DWELL];
+  optional int32  appID       = 8;
+  optional bool   mergeFile   = 9 [default = false];
+  optional GainMode gainMode  = 10[default = AGC]; 
+  optional string hostname    = 11[default = 'None']; 
+}
+
+message TxTune
+{
+  optional string msgName     = 1 [default = "TXTUNE"];
+  optional bool   state       = 2;
+  optional int32  channel     = 3;
+  optional float  freqMHz     = 4;
+  optional float  gaindB      = 5;
+  optional float  sampleRate  = 6;
+  optional string config      = 7;
+  optional bool   capeState   = 8; // CapeState differs from state in that state
+                                    // is a roll-up of all active techniques, i.e., if 
+                                    // *any* technique is active, state will be True.
+                                    // capeState indicates if the technique denoted by
+                                    // "config" is active or not.
+}
+
+
+////
+// Reactive Jam - Turn on or off the reactive jammer
+//                state = true will turn on the reactive jammer
+message ReactiveJam
+{
+    optional string msgName     = 1 [default = "REACTIVEJAM"];
+    optional bool state         = 2;
+}
+
+message diskSnapAvailable
+{
+  optional string msgName = 1 [default = "DISKSNAPAVAILABLE"];
+  optional string diskSnapID = 2;
+  optional string filename = 3;
+  optional string hostname = 4;
+}
+
+message SnapBroadcast
+{
+  enum State{
+    START = 0;
+    STOP  = 1;
+  }
+  optional string msgName     = 1 [default = "SNAPBROADCAST"];
+  optional float  freqMHz     = 2;
+  optional State  state       = 3 [default = STOP];
+}
+
+message ReceiverRequest
+{
+    optional int32 appID = 1;
+}
+
+message ReceiverRelease
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}
+
+message ReceiverAcquired
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}
+
+message ReceiverReleased
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}
+
+message ChangeRXTxConfig
+{
+  optional string msgName       = 1 [default = "ChangeRXTxConfig"];
+  optional string config        = 2 [default = "RCH3"];
+}
+
+/*
+message EWSDRRequest {
+    repeated Aperture aperture       = 1;
+    repeated Transceiver transceiver = 2;
+    optional string guid 			 = 3;
+    optional int32 priority			 = 4;
+    optional bool enabled			 = 5;
+}
+
+message Aperture {
+    optional int32 antenna      = 1;
+    optional float azimuth      = 2;
+    optional float elevation    = 3;
+    optional int32 polarization = 4;
+}
+
+////
+// Transceiver Message
+// This contains a specific setting for a transceiver
+// transceiver          The transceiver number that is being commanded
+// freqMHz              The freq we want to tune to
+// gainDB               The gain setting
+message Transceiver {
+    required int32 transceiver = 1;
+    optional float freqMHz     = 2;
+    optional int32 gainDB      = 3;
+}
+*/

@@ -1,0 +1,139 @@
+// This protocol specification was developed with US Government
+// funding and is licensed to the Government with Unlimited Rights.
+
+syntax = "proto2";
+
+package fv.aurora.protos.AuroraProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.aurora.protos";
+option java_outer_classname = "AuroraProtos";
+
+////////////////////////////////////////////////////////////////
+// AURORA MESSAGES
+////////////////////////////////////////////////////////////////
+
+import "ThunderbirdMessages.proto"; // contains EWCommandRequest, EWCeaseBuzzer, Parameter
+import "ServiceInfrastructureCommon.proto"; // messages common to Service and the Infrastructure
+import "ServiceInfrastructureExclusive.proto"; // messages common to Service and the Infrastructure
+import "BitMessages.proto"; // contains BIT messages
+import "BitStatusMessage.proto"; // contains BIT Status message
+import "BitManifestMessage.proto"; // contains BIT Manifest message
+
+message NetworkLayout
+{
+    // Front-end ZMQ Proxy Ports (used by Aurora)
+    // Base  port for the network; other ports are relative to this
+    optional int64 base_port = 1 [default = 8080];
+
+    // Aurora publishes to this port offset
+    optional int64 infrastructure_port_offset = 2 [default = 17];
+
+    // Kepler publishers to this port offset
+    optional int64 service_port_offset = 3 [default = 19];
+
+    // Port assignments for RX and TX VITA 49 streams
+    optional int64 rx_vita49_port = 4 [default = 40003];
+    optional int64 tx_vita49_port = 5 [default = 40003];
+
+    // Back-end ZMQ Proxy Ports (used by Kepler)
+    optional int64 sub_port = 6 [default = 6686];
+    optional int64 pub_port = 7 [default = 5585];
+}
+
+////
+// AuroraEnvelope Message
+// This is the only message that the Aurora System should send
+// to the EW Processor. All fields are optional to allow the
+// caller to send multiple types of messages. Only a single
+// sub-message should be populated per AuroraEnvelope message.
+message AuroraEnvelope {
+    optional service_infrastructure.Header header = 1;
+    optional service_infrastructure.Ack ack = 2;
+    optional service_infrastructure.NAck nack = 3;
+
+    // Defined in ServiceInfrastructureCommon
+    optional service_infrastructure.HandshakeTopic handshake = 4;
+
+    // Defined in ServiceInfrastructureExclusive
+    optional service_infrastructure.EWRequestTopic ew_request = 5;
+    optional service_infrastructure.ProductRequestTopic product_request = 6;
+
+    // Aurora specific messages
+    optional EWSDRCommandTopic ew_sdr_command = 7;
+
+    // Defined in BitMessages.proto
+    optional bit_protos.BitRequestTopic bit_test_request = 8;
+}
+
+message EWSDRCommandTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional fv.tb.protos.TBProtos.EWSDRCommand ew_sdr_command = 1;
+    optional fv.tb.protos.TBProtos.MissionMode mission_mode = 2;
+    optional fv.tb.protos.TBProtos.SetAppParameters app_parameters = 3;
+}
+
+message EWSDRRequestTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional fv.tb.protos.TBProtos.EWSDRRequest ew_sdr_request = 1;
+    optional fv.tb.protos.TBProtos.MissionMode mission_mode = 2;
+}
+
+////
+// EWProcessorEnvelope Message
+// This is the only message that the EW Processor subsystem will send
+// to the Aurora System. All fields are optional to allow the
+// caller to send multiple types of messages. Only a single
+// sub-message should be populated per EWProcessorEnvelope message.
+message EWProcessorEnvelope {
+    optional service_infrastructure.Header header = 1;
+    optional service_infrastructure.Ack ack = 2;
+    optional service_infrastructure.NAck nack = 3;
+
+    // Defined in ServiceInfrastructureCommon
+    optional service_infrastructure.HandshakeTopic handshake = 4;
+
+    // Defined in ServiceInfrastructureExclusive
+    optional service_infrastructure.SignalEventTopic signal_event = 5;
+
+    // Defined in ServiceInfrastructureExclusive
+    optional service_infrastructure.EWResponseTopic ew_response = 6;
+    optional service_infrastructure.ProductResponseTopic product_response = 7;
+
+    // Aurora specific messages
+    optional EWSDRStatusTopic ew_sdr_status = 8;
+
+    // Defined in BitMessages.proto
+    optional bit_protos.BitResponseTopic bit_test_response = 9;
+
+    // Defined in BitStatusMessage.proto
+    optional com.srcinc.ngi.data.BitStatusTopic bit_status_response = 10;
+
+    // Defined in BitManifestMessage.proto
+    optional com.srcinc.ngi.data.BitManifestTopic bit_manifest_response = 11;
+}
+
+message EWSDRStatusTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional fv.tb.protos.TBProtos.EWSDRStatus ew_sdr_status = 1;
+    optional fv.tb.protos.TBProtos.ThreatStatus threat_status = 2;
+}
+
+
+////////////////////////////////////////////////////////////////
+// Handshaking Messages
+////////////////////////////////////////////////////////////////
+
+
+// Version Message
+message AuroraICDVersion {
+    optional int32  major  = 1 [default = 0];
+    optional int32  minor  = 2 [default = 0];
+    optional int32  patch  = 3 [default = 6];
+    optional string date   = 4 [default = '2020-08-14'];
+    optional string commit = 5;
+}

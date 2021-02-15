@@ -1,0 +1,709 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for resources in the falcon package.  These are
+// populated by your resource's configureMessage() method.  This static
+// method is used so that control does not need to know what resources are
+// available until runtime, removing the need for you to modify control to
+// add a new resource.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_res_msg;
+
+////
+// Configuration parameters to send the DummyReceiver resource.  These are populated
+// by DummyReceiver.configureMessage() and from resources.xml.
+//
+// msgName: DUMMYRCV_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// rx: Receiver string (e.g. RCV1 or RCV2)
+// host: Hostname to use for the receiver
+// fs: Sample rate of the receiver
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+// uniqRXID: Set to 999 to lookup, or channel number to use
+message DummyRcvConfig
+{
+  optional string  msgName  = 1  [default = "DUMMYRCV_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional string  rx       = 4;
+  optional string  host     = 5  [default = "local"];
+  optional float   fs       = 6  [default = 100e6];
+  optional float   minRF    = 7 [default = 20e6];
+  optional float   maxRF    = 8 [default = 3000e6];
+  optional string  uniqRXID = 9 [default = "999"];
+  optional int32   pair     = 10;
+  optional int32   testDur  = 11;
+}
+////
+// Configuration parameters to send the PIC resource.  These are populated
+// by ResourcePIC.configureMessage() and from resources.xml.
+//
+// msgName: PIC_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// rx: Receiver string (e.g. RX1 or RX2)
+// pic: PIC input to use (e.g. PICIN1)
+// picflags: Flags to send the sourcepic primitive
+// picside: Receiver on the PIC to use (e.g. A or B)
+// host: Hostname to use for the receiver
+// fs: Sample rate of the receiver
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+// uniqRXID: Set to 999 to lookup, or channel number to use
+message PICConfig
+{
+  optional string  msgName  = 1  [default = "PIC_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional string  rx       = 4;
+  optional string  pic      = 5;
+  optional string  picflags = 6;
+  optional string  picside  = 7;
+  optional string  host     = 8  [default = "local"];
+  optional float   fs       = 9  [default = 100e6];
+  optional float   minRF    = 10 [default = 20e6];
+  optional float   maxRF    = 11 [default = 3000e6];
+  optional string  uniqRXID = 12 [default = "999"];
+  optional int32   pair     = 13;
+  optional int32   testDur  = 14;
+}
+
+////
+// Configuration parameters to send the MMS resource.  These are populated
+// by ResourceMMS.configureMessage() and from resources.xml.
+//
+// msgName: MMS_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// IP: IP of the MMS data
+// controlPort: MMS control port number
+// dataPort: MMS data port number
+// interfaceIP: IP to use for the MMS interface
+// receiver: Receiver number to use
+// host: Hostname to use for the receiver
+// fs: Sample rate of the receiver
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+// uniqRXID: Set to 999 to lookup, or channel number to use
+message MMSConfig
+{
+  optional string  msgName     = 1  [default = "MMS_CONFIG"];
+  optional int32   channel     = 2;
+  optional int32   baseAux     = 3;
+  optional string  IP          = 4;
+  optional int32   controlPort = 5;
+  optional int32   dataPort    = 6;
+  optional string  interfaceIP = 7;
+  optional int32   receiver    = 8;
+  optional string  host        = 9  [default = "local"];
+  optional float   fs          = 10 [default = 100e6];
+  optional float   minRF       = 11 [default = 20e6];
+  optional float   maxRF       = 12 [default = 3000e6];
+  optional string  cal30abw    = 13 [default = 'mms_30abw.csv'];
+  optional string  cal5abw     = 14 [default = 'mms_5abw.csv'];
+  optional string  uniqRXID    = 15 [default = "999"];
+  optional int32   pair        = 16;
+  optional int32   testDur     = 17;
+  optional int32   rfcuPort    = 18 [default = -1];
+  optional string  rfcuIP      = 19 [default = ""];
+}
+
+////
+// Configuration parameters to send the ZACQ resource.  These are populated
+// by ZacqReceiver.configureMessage() and from resources.xml.
+//
+// !! THIS WAS copied from DUMMYRCV_CONFIG for initial development
+// actual fields TBD !!
+//
+// msgName: DUMMYRCV_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// rx: Receiver string (e.g. RCV1 or RCV2)
+// host: Hostname to use for the receiver
+// fs: Sample rate of the receiver
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+// uniqRXID: Set to 999 to lookup, or channel number to use
+// initScript: Set up script run by v3zinit (in ZACQ option tree)
+message ZACQConfig
+{
+  optional string  msgName  	= 1  [default = "ZACQ_CONFIG"];
+  optional int32   channel  	= 2;
+  optional int32   baseAux  	= 3;
+  optional string  rx       	= 4;
+  optional string  host     	= 5  [default = "local"];
+  optional float   fs       	= 6  [default = 100e6];
+  optional float   minRF    	= 7 [default = 20e6];
+  optional float   maxRF    	= 8 [default = 3000e6];
+  optional string  uniqRXID 	= 9 [default = "999"];
+  optional int32   pair     	= 10;
+  optional int32   testDur  	= 11;
+  optional string  initScript 	= 12;
+}
+
+////
+// Configuration parameters to send the USRP Rx resource.  These are populated
+// by ResourceUSRPRxTx.configureMessage() and from resources.xml.
+//
+// msgName: USRP_RXTX_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// args: Default arguments to send to the USRP
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+message USRPRxTxConfig
+{
+  optional string  msgName  = 1 [default = "USRP_RXTX_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional string  args     = 4 [default = "addr=192.168.10.2"];
+  optional float   minRF    = 5;
+  optional float   maxRF    = 6;
+  optional float   fs       = 7 [default = 100e6];
+  optional string  uniqRXID = 8 [default = "999"];
+}
+
+////
+// Configuration parameters to send the USRP Rx resource.  These are populated
+// by ResourceUSRPRxTx.configureMessage() and from resources.xml.
+//
+// msgName: EPIC_RXTX_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// args: Default arguments to send to the USRP
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+message EPIQRxTxConfig
+{
+  optional string  msgName  = 1 [default = "EPIQ_RXTX_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional int32   controlPort = 4;
+  optional int32   rfPort      = 5;
+  optional string  host        = 6  [default = "local"];
+  optional float   minRF       = 7;
+  optional float   maxRF       = 8;
+  optional float   fs          = 9 [default = 25e6];
+  optional string  uniqRXID    = 10 [default = "999"];
+  optional string  uniqTXID    = 11 [default = "999"];
+  optional float   delayReset  = 12 [default = -1.0];
+}
+
+////
+// Configuration parameters to send the RTLSDR resource.  These are populated
+// by ResourceRTLSDR.configureMessage() and from resources.xml.
+//
+// msgName: RTLSDR_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// args: Default arguments to send to the RTLSDR
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+message RTLSDRConfig
+{
+  optional string  msgName  = 1 [default = "RTLSDR_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional int32   controlPort = 4;
+  optional string  host        = 5  [default = "local"]; 
+  optional float   minRF       = 6;
+  optional float   maxRF       = 7;
+  optional float   fs          = 8 [default = 2048000];
+  optional string  uniqRXID    = 9 [default = "999"];
+}
+
+////
+// Configuration parameters to send the USRP Rx resource.  These are populated
+// by ResourceUSRPRx.configureMessage() and from resources.xml.
+//
+// msgName: USRP_RX_CONFIG, used to identify the message
+// channel: Channel number to use (legacy)
+// baseAux: Aux number used as the base for the channel
+// args: Default arguments to send to the USRP
+// usrpchan: Receiver number to use
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+message USRPRxConfig
+{
+  optional string  msgName  = 1 [default = "USRP_RX_CONFIG"];
+  optional int32   channel  = 2;
+  optional int32   baseAux  = 3;
+  optional string  args     = 4 [default = "addr=192.168.10.2"];
+  optional int32   usrpchan = 5;
+  optional float   minRF    = 6;
+  optional float   maxRF    = 7;
+  optional float   fs       = 8 [default = 100e6];
+}
+
+////
+// Configuration parameters to send the Pentek resource.  These are populated
+// by ResourcePentek.configureMessage() and from resources.xml.
+//
+// msgName: PENTEK_CONFIG, used to identify the message
+// clkFreq: DAC clock frequency in Hz
+// dacInterp: DAC interpolation factor
+// coreInterp: FPGA interpolation factor
+// baseChan: Base interpolator channel (1 or 3)
+// numBuffers: Number of buffers of samples (xferlen long, min 2)
+// freqShift: Frequency shift on the Pentek
+// siggenIP: IP of the signal generator
+// siggenType: Type of Signal Generator
+message PentekConfig
+{
+  enum SiggenType {
+    ROHDE_SCHWARZ = 0;
+    MMS_MUP = 1;
+  };
+  optional string msgName    = 1 [default = "PENTEK_CONFIG"];
+  optional float  clkFreq    = 2 [default = 400e6];
+  optional int32  dacInterp  = 3 [default = 16];
+  optional int32  coreInterp = 4 [default = 1]; 
+  optional int32  baseChan   = 5 [default = 1];
+  optional int32  numBuffers = 6 [default = 2];
+  optional float  freqShift  = 7 [default = 0];
+  optional string siggenIP   = 8;
+  optional SiggenType siggenType = 9 [default = ROHDE_SCHWARZ];
+}
+
+////
+// Configuration parameters to send the USRP Tx resource.  These are populated
+// by ResourceUSRPTx.configureMessage() and from resources.xml.
+//
+// msgName: USRP_TX_CONFIG, used to identify the message
+// args: Default arguments to send to the USRP
+// usrpchan: Transmitter number to use
+// minRF: Minimum RF used for receiving
+// maxRF: Maximum RF used for receiving
+message USRPTxConfig
+{
+  optional string  msgName  = 1 [default = "USRP_TX_CONFIG"];
+  optional string  args     = 2 [default = "addr=192.168.10.2"];
+  optional int32   usrpchan = 3;
+  optional float   minRF    = 4;
+  optional float   maxRF    = 5;
+}
+
+////
+// Configuration parameters to send the RF switch resource.  These are populated
+// by ResourceRFSwitch.configureMessage() and from resources.xml.
+//
+// msgName: RFSWITCH_CONFIG, used to identify the message
+// IP: IP of the rf switch or hostname
+// slaveTimeout: Timeout in seconds
+// energyScanSec: Number of seconds to stay on each port when energy scanning
+// energyTrackTime: Number of seconds between energy tracks
+message RFSwitchConfig
+{
+  optional string msgName       = 1 [default = "RFSWITCH_CONFIG"];
+  optional string IP            = 2 [default = "nportserver"];
+  optional int32  slaveTimeout  = 3 [default = 180]; // 3 minutes
+  optional float  energyScanSec = 4 [default = 10];
+  optional float  energyTrackTime = 5 [default = 300];
+  optional int32  port          = 6 [default = 4003];
+  optional bool   setOnLaunch   = 7 [default = false];
+}
+
+////
+// Configuration parameters to send the serial RF switch resource.  These are populated
+// by ResourceRFSwitchSerial.configureMessage() and from resources.xml.
+//
+// msgName: RFSWITCH_SERIAL_CONFIG, used to identify the message
+// device: path to the serial device to use
+// baud: baud rate to use to communicate with the device
+// slaveTimeout: Timeout in seconds
+// energyScanSec: Number of seconds to stay on each port when energy scanning
+// energyTrackTime: Number of seconds between energy tracks
+message RFSwitchSerialConfig
+{
+  optional string msgName       = 1 [default = "RFSWITCH_SERIAL_CONFIG"];
+  optional string device        = 2 [default = "/dev/ttyS0"];
+  optional int32  baud          = 3 [default = 9600];
+  optional int32  slaveTimeout  = 4 [default = 180]; // 3 minutes
+  optional float  energyScanSec = 5 [default = 10];
+  optional float  energyTrackTime = 6 [default = 300];
+}
+
+////
+// Configuration parameters to send the CP switch resource. These are populated
+// by ResourceCPSwitch.configureMessage() and from resources.xml
+//
+// msgName: CPSWITCH_CONFIG, used to indetify the message
+// IP: IP of the CP switch
+// port: port value of the CP switch
+// slaveTimeout: Timeout in seconds
+// enegeryScanSec: Number of seconds to stay on each port when energy scanning
+// energyTrackTime: Number of seconds between energy tracks
+message CPSwitchConfig
+{
+  optional string msgName       = 1 [default = "CPSWITCH_CONFIG"];
+  optional string IP            = 2;
+  optional int32  port          = 3 [default = 23];
+  optional int32  slaveTimeout  = 4 [default = 180]; // 3 mins
+  optional float  energyScanSec = 5 [default = 10];
+  optional float  energyTrackTime = 6 [default = 300];
+}
+
+////
+// Configuration parameters to send the antenna resource.  These are populated
+// by ResourceAntenna.configureMessage() and from resources.xml.
+//
+// msgName: ANTENNA_CONFIG, used to identify the message
+// minRF: Minimum RF of the antenna's range
+// maxRF: Maximum RF of the antenna's range
+// fixedAngle: If within the range [-360,360], the directional angle
+// latitude: Current position of the antenna if stationary
+// longitude: Current position of the antenna if stationary
+// altitude: Current position of the antenna if stationary
+// beamwidth: If specified, the antenna beamwidth
+// dwncnvtLO: Downconversion LO that is passed to apps
+// ssc: The unique SSC of a target satellite
+// band: The frequency band of the antenna
+// polarization: The polarization of the antenna
+// group: A number that can be assigned to antennas to group them together
+// sightDistance: The advertised distance of the antenna
+// noiseTest: The noise diode test to run
+message AntennaConfig
+{
+  optional string  msgName    = 1 [default = "ANTENNA_CONFIG"];
+  optional float   minRF      = 2;
+  optional float   maxRF      = 3; 
+  optional float   fixedAngle = 4 [default = -999];
+  optional float   latitude   = 5 [default = 0];
+  optional float   longitude  = 6 [default = 0];
+  optional float   altitude   = 7 [default = 0];
+  optional float   beamwidth  = 8 [default = 0];
+  optional float   dwncnvtLO  = 9 [default = 0];
+  optional int32   ssc        = 10 [default = -1];
+  optional string  band       = 11;
+  optional string  polarization = 12;
+  optional int32   group      = 13;
+  optional float   sightDistance  = 14 [default = 500];
+  optional string  noiseTest  = 15 [default = "NO_TEST"];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_RPM_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// ElOffset: Offset in elevation of the rotor
+// hardLimit: Enable or disable limits
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// minElevation: Minimum elevation angle to maintain
+// maxElevation: Maximum elevation angle to maintain
+// scanElevation: Elevation angle to use when scanning (e.g. for FAST scans)
+// multicastRate: Rate of multicasting from GlobalConfig hardware
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees/sec to use when energy scanning
+// scanScrypt: scan scrypt to use for antenna angles
+// gpsServer: Server to get GPS points from
+// gpsUpdate: ???
+// elDisabled: Enable or disable azimuth only operation
+// invertAz: Enable or disable azimuth inversion
+// maxVelocity: set the max velocity for the Rotor (in deg/sec - highest is 30)
+// dynamicVel: set to true to use dynamic velocity stepping for RPM
+// slewEnabled: set to true to allow slew scanning
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorRPMConfig
+{
+  optional string  msgName            = 1 [default = "ROTOR_RPM_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional float   ElOffset           = 5;
+  optional bool    hardLimit          = 6;
+  optional float   minScanAngle       = 7;
+  optional float   maxScanAngle       = 8;
+  optional float   minElevation       = 9;
+  optional float   maxElevation       = 10;
+  optional float   scanElevation      = 11;
+  optional float   multicastRate      = 12;
+  optional float   pointHoldIncrement = 13;
+  optional float   energyScanSpeed    = 14 [default = 4];
+  optional float   startDeviation     = 15 [default = 180];
+  optional float   energyTrackTime    = 16 [default = 30];
+  optional string  scanScrypt         = 17 [default = "NONE"];
+  optional string  gpsServer          = 18 [default = "OFF"];
+  optional string  gpsUpdate          = 19 [default = "ON"];
+  optional bool    elDisabled         = 20 [default = false];
+  optional bool    invertAz           = 21 [default = false];
+  optional float   maxVelocity        = 22 [default = 10];
+  optional bool    dynamicVel         = 23 [default = false];
+  optional bool    slewEnabled        = 24 [default = false];
+  optional float   azCloseEnough      = 25 [default = 0.5];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_PROTATOR_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// hardLimit: Enable or disable limits
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// multicastRate: Rate of multicasting from GlobalConfig hardware
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees
+// scanScrypt: scan scrypt to use for antenna angles
+// gpsServer: Server to get GPS points from
+// gpsUpdate: ???
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorProtatorConfig
+{
+  optional string  msgName            = 1 [default = "ROTOR_PROTATOR_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional bool    hardLimit          = 5;
+  optional float   minScanAngle       = 6;
+  optional float   maxScanAngle       = 7;
+  optional float   multicastRate      = 8;
+  optional float   pointHoldIncrement = 9;
+  optional float   energyScanSpeed    = 10 [default = 20];
+  optional float   startDeviation     = 11 [default = 180];
+  optional float   energyTrackTime    = 12 [default = 500];
+  optional string  scanScrypt         = 13 [default = "NONE"];
+  optional string  gpsServer          = 14 [default = "OFF"];
+  optional string  gpsUpdate          = 15 [default = "ON"];
+  optional float   azCloseEnough      = 16 [default = 5];
+  optional bool    elDisabled         = 17 [default = true];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_PROSISTEL_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// hardLimit: Enable or disable limits
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// multicastRate: Rate of multicasting from GlobalConfig hardware
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees/sec to use when energy scanning
+// scanScrypt: scan scrypt to use for antenna angles
+// gpsServer: Server to get GPS points from
+// gpsUpdate: ???
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorProsistelConfig
+{
+  optional string  msgName            = 1 [default = "ROTOR_PROSISTEL_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional bool    hardLimit          = 5;
+  optional float   minScanAngle       = 6;
+  optional float   maxScanAngle       = 7;
+  optional float   multicastRate      = 8;
+  optional float   pointHoldIncrement = 9;
+  optional float   energyScanSpeed    = 10 [default = 20];
+  optional float   startDeviation     = 11 [default = 180];
+  optional float   energyTrackTime    = 12 [default = 500];
+  optional string  scanScrypt         = 13 [default = "NONE"];
+  optional string  gpsServer          = 14 [default = "OFF"];
+  optional string  gpsUpdate          = 15 [default = "ON"];
+  optional float   azCloseEnough      = 16 [default = 5];
+  optional bool    elDisabled         = 17 [default = false];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_EZROTOR_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// hardLimit: Enable or disable limits
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// multicastRate: Rate of multicasting from GlobalConfig hardware
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees/sec to use when energy scanning
+// scanScrypt: scan scrypt to use for antenna angles
+// gpsServer: Server to get GPS points from
+// gpsUpdate: ???
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorEzrotorConfig
+{
+  optional string  msgName            = 1 [default = "EZROTOR_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional bool    hardLimit          = 5;
+  optional float   minScanAngle       = 6;
+  optional float   maxScanAngle       = 7;
+  optional float   multicastRate      = 8;
+  optional float   pointHoldIncrement = 9;
+  optional float   energyScanSpeed    = 10 [default = 20];
+  optional float   startDeviation     = 11 [default = 180];
+  optional float   energyTrackTime    = 12 [default = 500];
+  optional string  scanScrypt         = 13 [default = "NONE"];
+  optional string  gpsServer          = 14 [default = "OFF"];
+  optional string  gpsUpdate          = 15 [default = "ON"];
+  optional float   azCloseEnough      = 16 [default = 5];
+  optional bool    elDisabled         = 17 [default = false];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_HGIO_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// multicastRate: Rate of multicasting from GlobalConfig hardware
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees/sec to use when energy scanning
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorHGIOConfig
+{
+  optional string  msgName            = 1 [default = "HGIO_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional bool    hardLimit          = 5 [default = false];
+  optional float   minScanAngle       = 6;
+  optional float   maxScanAngle       = 7;
+  optional float   minElevation       = 8;
+  optional float   maxElevation       = 9;
+  optional float   scanElevation      = 10;
+  optional float   multicastRate      = 11;
+  optional float   pointHoldIncrement = 12;
+  optional float   energyScanSpeed    = 13 [default = 5];
+  optional float   startDeviation     = 14 [default = 180];
+  optional float   energyTrackTime    = 15 [default = 500];
+  optional bool    useGps             = 16 [default = false];
+  optional string  scanScrypt         = 17 [default = "NONE"];
+  optional string  gpsServer          = 18 [default = "OFF"];
+  optional string  gpsUpdate          = 19 [default = "ON"];
+  optional float   azCloseEnough      = 20 [default = 0.5];
+  optional bool    elDisabled         = 21 [default = false];
+  optional bool    slewEnabled        = 22 [default = false];
+}
+
+////
+// Configuration parameters to send the rotor resource.  These are populated
+// by ResourceRotor.configureMessage() and from resources.xml.
+//
+// msgName: ROTOR_RPM_CONFIG, used to identify the message
+// IP: IP address to use for communication to the rotor
+// port: Port number to use for communication to the rotor
+// AzOffset: Offset in azimuth of the rotor
+// hardLimit: Enable or disable limits
+// minScanAngle: Minimum angle to scan (e.g. for FAST scans)
+// maxScanAngle: Maximum angle to scan (e.g. for FAST scans)
+// pointHoldIncrement: Degrees to step when stepping
+// energyScanSpeed: Velocity in degrees/sec to use when energy scanning
+// scanScrypt: scan scrypt to use for antenna angles
+// azCloseEnough: value used to tell if the antenna is close enough to the commanded angle
+message RotorESAConfig
+{
+  optional string  msgName            = 1 [default = "ROTOR_ESA_CONFIG"];
+  optional string  IP                 = 2;
+  optional int32   port               = 3;
+  optional float   AzOffset           = 4;
+  optional bool    hardLimit          = 5;
+  optional float   minScanAngle       = 6;
+  optional float   maxScanAngle       = 7;
+  optional float   pointHoldIncrement = 8;
+  optional float   energyScanSpeed    = 9 [default = 4];
+  optional float   startDeviation     = 10 [default = 180];
+  optional float   energyTrackTime    = 11 [default = 20];
+  optional string  scanScrypt         = 12 [default = "NONE"];
+  optional float   azCloseEnough      = 13 [default = 0.5];
+  optional bool    elDisabled         = 14 [default = true];
+}
+
+////
+// Configuration parameters to send the Dragon Shadow RF switch resource.  These are populated
+// by ResourceDSSwitch.configureMessage() and from resources.xml.
+//
+// msgName: RFSWITCH_CONFIG, used to identify the message
+// IP: IP of the rf switch or hostname
+// slaveTimeout: Timeout in seconds
+// energyScanSec: Number of seconds to stay on each port when energy scanning
+// energyTrackTime: Number of seconds between energy tracks
+message DSSwitchConfig
+{
+  optional string msgName       = 1 [default = "DSSWITCH_CONFIG"];
+  optional string baseURL       = 2 ;
+  optional string inputPath     = 3 ;
+  optional string outputPath    = 4 ;
+  optional string userName      = 5 ;
+  optional string password      = 6 ;
+  optional float  sleepTime     = 7 ;
+  optional int32  slaveTimeout  = 8 [default = 180]; // 3 minutes
+  optional float  energyScanSec = 9 [default = 10];
+  optional float  energyTrackTime = 10 [default = 300];
+}
+
+
+message DummyConfig
+{
+  optional string  msgName            = 1 [default = "DummyConfig"];
+  optional string  message            = 2;
+}
+
+////
+// Configuration parameters to send the MMSXT resource.  These are populated
+// by ResourceMMSXT.configureMessage() and from resources.xml.
+//
+// msgName: MMSXT_CONFIG, used to identify the message
+// transmitter: Transmitter number to use
+// MMSXTCtrlIP: IP Address of MMS XT's 1G Ethernet
+// controlPort: Port number of the MMS XT's 1G Ethernet
+// MMSXTDataIP: IP Address of MMS XT's 10G Ethernet
+// dataPort: Port number of the MMS XT's 10G Ethernet
+// uniqTXID: Unique ID for this TX
+// txcuPort: Port number for communication with TXCU
+// txcuIP: IP for the TXCU
+message MMSXTConfig
+{
+  optional string msgName       = 1 [default = "MMSXT_CONFIG"];
+  optional int32  transmitter   = 2;
+  optional string MMSXTCtrlIp   = 3;
+  optional int32  controlPort   = 4 [default = 23];
+  optional string MMSXTDataIp   = 5;
+  optional int32  dataPort      = 6 [default = 49300];
+  optional string uniqTXID      = 7 [default = "999"];
+  optional int32  txcuPort      = 8 [default = -1];
+  optional string txcuIP        = 9 [default = ""];
+}
+
+////
+// Configuration parameters to send the amp resource.  These are populated
+// by ResourceAmp.configureMessage() and from resources.xml.
+//
+// msgName: AMP_CONFIG, used to identify the message
+// IP: IP of the amp or hostname
+// port: port to connect to 
+message AmpConfig
+{
+  optional string msgName       = 1 [default = "AMP_CONFIG"];
+  optional string IP            = 2 [default = "nportserver"];
+  optional int32  port          = 3 [default = 4012];
+  optional bool   hardware      = 4;
+  optional int32  init_atten    = 5;
+}

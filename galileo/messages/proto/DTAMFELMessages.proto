@@ -1,0 +1,141 @@
+// This protocol specification was developed with US Government
+// funding and is licensed to the Government with Unlimited Rights.
+
+syntax = "proto2";
+
+///////////////example -- ////////////////
+// This is the package where the python/XML source code will be placed. 
+//package fv.aurora.protos.AuroraProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+//option java_package = "fv.aurora.protos";
+//option java_outer_classname = "AuroraProtos";
+
+// Package used in c and java; python ignores
+//package falcon_common_msg;
+//////////////// --- /////////////////////
+
+////////////////////////////////////////////////////////////////
+// D-TA MFEL MESSAGES
+////////////////////////////////////////////////////////////////
+
+import "ThunderbirdMessages.proto"; // contains EWCommandRequest, EWCeaseBuzzer, Parameter
+import "ServiceInfrastructureCommon.proto"; // messages common to Service and the Infrastructure
+import "ServiceInfrastructureExclusive.proto"; // messages common to Service and the Infrastructure
+import "BitMessages.proto"; // contains BIT messages
+
+
+//Commands -----------------------------------------------------------------------
+message RunMode
+{
+
+
+}
+
+message StandbyMode
+{
+
+
+}
+
+message ShutdownSystem
+{
+
+
+}
+
+message GetSystemStatus
+{
+
+
+}
+
+
+message GetTrackList
+{
+
+
+}
+
+message GetTrackReport
+{
+
+
+}
+
+message GetTrackPDWs
+{
+
+
+}
+
+//Messages -----------------------------------------------------------------------
+message ACK
+{
+
+
+}
+
+message SystemStatus
+{
+
+
+}
+
+message SystemInfo
+{
+
+
+}
+
+message DtaResponseTopic
+{
+    
+    optional service_infrastructure.Header header = 100;
+    optional DtaBitResponse dta_bit_response = 1;
+    optional DtaTrackReport dta_track_report = 2;
+    optional DtaSystemInfo dta_system_info = 3;
+    optional DtaSystemStatus dta_system_status = 4;
+
+}
+
+message  DtaBitReport
+{
+    enum ResultEnum {
+        NOERROR = 0;
+        UNKNOWN = 1;
+    }
+
+    enum StateEnum {
+        STANDBY = 0;
+        RUN = 1;
+        GOOD = 2;
+    }
+
+    optional string test_name = 1;
+    optional ResultEnum result = 2;
+    optional StateEnum state = 3;
+    optional string notes = 4 [default = 'None'];
+
+}
+
+message DtaBitResponse
+{
+    repeated DtaBitReport dta_bit_reports = 1;
+
+}
+
+message DtaTrackReport
+{
+    optional int32 empty = 1 [default = 0];
+}
+
+message DtaSystemStatus
+{
+    optional int32 empty = 1 [default = 0];
+}
+message DtaSystemInfo
+{
+    optional int32 empty = 1 [default = 0];
+}
+

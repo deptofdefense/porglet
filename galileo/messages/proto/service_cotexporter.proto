@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package service_cotexporter;
+
+message COTExporterConfig{
+    optional string msgName = 1 [default = "service_cotexporter.COTExporterConfig"];
+    
+    // Protocol to use for export. Currently only UDP is supported.
+    optional string exportProtocol = 2 [default = "UDP"];
+    
+    // Export IP Address
+    optional string ipAddr = 3 [default = "239.1.1.1"];
+    
+    // Export Port
+    optional int32 exportPort = 4 [default = 9500];
+}
+

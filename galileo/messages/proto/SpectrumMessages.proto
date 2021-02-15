@@ -1,0 +1,55 @@
+// This protocol specification was developed with US Government
+// funding and is licensed to the Government with Unlimited Rights.
+
+syntax = "proto2";
+
+package fv.spectrums.protos.SpectrumsProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.spectrums.protos";
+option java_outer_classname = "SpectrumProtos";
+
+import "ServiceInfrastructureCommon.proto";
+
+////////////////////////////////////////////////////////////////
+// SPECTRUM MESSAGES
+////////////////////////////////////////////////////////////////
+
+// Topic envelope for spectrum messages
+message SpectrumTopic
+{
+    optional service_infrastructure.Header header = 100;
+
+    optional Spectrum spectrum = 1;
+}
+
+message Spectrum
+{
+    // Message Name
+    optional string msgName = 1 [default = "SPECTRUM"];
+
+    // Source Host Name
+    optional string hostname = 2 [default = "localhost"];
+
+    // Spectrum Whole Seconds
+    optional float wholesec = 3 [default = 0];
+
+    // Spectrum Fractional Seconds
+    optional float fracsec = 4 [default = 0];
+
+    // Elements in the Spectrum
+    optional int32 framelength = 5 [default = 2048];
+
+    // Start Freq Hz (The Left-Most Bin)
+    optional float minfreq = 6;
+    
+    // Bin Resolution (Hz / Bin)
+    optional float binres = 7;
+
+    // The channel that the data came from
+    optional int32 channel = 8;
+    
+    // The Actual Data. There will typically be 2048, 4096, 8192, etc values
+    repeated float binvalue = 9;
+}

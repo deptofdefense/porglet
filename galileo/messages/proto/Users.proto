@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package com.srcinc.ngi.common;
+
+// An enumeration of possible user levels. The User Level Definition message is
+// used to map these generic levels to a specific value for a sensor.
+enum UserLevel
+{
+   USER_LEVEL_0 = 0;
+   USER_LEVEL_1 = 1;
+   USER_LEVEL_2 = 2;
+   USER_LEVEL_3 = 3;
+   USER_LEVEL_4 = 4;
+}

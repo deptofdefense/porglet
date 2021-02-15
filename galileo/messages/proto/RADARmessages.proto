@@ -1,0 +1,60 @@
+syntax = "proto2";
+
+package rdr_msg;
+
+import "ServiceInfrastructureCommon.proto";
+
+message RadarTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional RadarMetaData radar_data = 1;
+}
+
+message GeodeticCoordinates
+{
+  optional float latitude = 1;
+  optional float longitude = 2;
+  optional float altitude = 3;
+}
+
+message VelocityNED
+{
+  optional float vnorth_mps = 1;
+  optional float veast_mps = 2;
+  optional float vdown_mps = 3;
+}
+
+message Track
+{
+  optional int64 trackId = 1;
+  optional float rcsAvg = 2;
+  optional float speedAvg = 3;
+  optional float rcsMin = 4;
+  optional float rcsMax = 5;
+  optional float speedMin = 6;
+  optional float speedMax = 7;
+  optional float duration = 8;
+  optional int64 isActive = 9;
+  optional float range = 10;
+}
+
+message TrackEstimate
+{
+  optional float agl = 1;
+  optional int64 gpsTime = 2;
+  optional float rcs = 3;
+  optional GeodeticCoordinates lla = 4;
+  optional VelocityNED velNED = 5;
+  optional float heading = 6;
+  optional int64 ts = 7;
+  optional float speed = 8;
+}
+
+message RadarMetaData
+{
+  optional string msgName = 1 [default = "RADAR_DATA"];
+  optional Track track = 2;
+  optional TrackEstimate trackEst = 3;
+}
+
+

@@ -1,0 +1,136 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+/* Messages common to Service and the Infrastructure */
+
+package service_infrastructure;
+
+message Header
+{
+    optional int64 sequence_number = 1;
+    optional string timestamp = 2;
+    optional int32 pid = 3;
+    optional string sensorName = 4 [default = ""];
+}
+
+message Ack
+{
+    // empty
+}
+
+message NAck
+{
+    optional ErrorCode error_code = 2 [default = UNKNOWN];
+    optional string error_description = 3;
+}
+
+enum ErrorCode
+{
+    // default error
+    UNKNOWN = 0;
+
+    // compatibility errors
+    INCOMPATIBLE_RELEASE = 1;
+    INCOMPATIBLE_ICD = 2;
+    INCOMPATIBLE_CONFIGURATION = 3;
+
+    // signal-related errors
+    UNKNOWN_SIGNAL = 100;
+    INVALID_SIGNAL_STATE = 101;
+    NO_AVAILABLE_RESOURCES = 102;
+    UNSUPPORTED_SIGNAL = 103;
+}
+
+message HandshakeTopic
+{
+    optional Header header = 100;
+    optional Ack ack = 1;
+    optional NAck nack = 2;
+    optional StartupNotification startup_notification = 3;
+    optional ShutDownNotification shutdown_notification = 4;
+    optional ConnectionRequest connection_request = 5;
+    optional ConnectionResponse connection_response = 6;
+    optional ConfigurationRequest configuration_request = 7;
+    optional ConfigurationResponse configuration_response = 8;
+}
+
+message StartupNotification
+{
+      //empty
+}
+
+message ShutDownNotification
+{
+    // empty
+}
+
+message ConnectionRequest
+{
+    optional Version release = 1;
+    optional Version icd = 2;
+}
+
+message ConnectionResponse
+{
+    optional Version release = 1;
+    optional Version icd = 2;
+}
+
+message Version
+{
+    optional int64 major = 1 [default = -1];
+    optional int64 minor = 2 [default = -1];
+    optional int64 patch = 3 [default = -1];
+    optional string date = 4 [default = '0-0-0'];
+    optional string commit = 5;
+}
+
+message ConfigurationRequest
+{
+    optional Configuration requested_configuration = 1;
+}
+
+message ConfigurationResponse
+{
+    optional Configuration current_configuration = 1;
+}
+
+message Configuration
+{
+    optional int64 max_file_duration = 1;
+    optional int64 min_buffer_depth = 2;
+    optional bool use_agc = 3 [default = true];
+    repeated Band bands = 4;
+    repeated Channel rx_channels = 5;
+    repeated Channel tx_channels = 6;
+    repeated SearchConfiguration search_configuration = 7;
+}
+
+message SearchConfiguration {
+    optional float start_az = 1;
+    optional float stop_az = 2;
+    optional float start_el = 3;
+    optional float stop_el = 4;
+    optional int32 antenna = 5;
+    optional float step_az = 6;
+    optional float step_el = 7;
+    optional float step_time = 8;
+}
+
+message Band
+{
+    optional string label = 1;
+    optional double start_freq_hz = 2;
+    optional double stop_freq_hz = 3;
+}
+
+message Channel
+{
+    optional int32 channel_number = 1;
+    optional double sample_rate_sps = 2;
+    optional double bandwidth_hz = 3;
+    optional double decimation = 4;
+}
+

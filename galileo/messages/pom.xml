@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>fv</groupId>
+  <artifactId>fv-protos-kepsvisor</artifactId>
+  <version>4.14.0-1-SNAPSHOT</version>
+
+  <description>Build both dsp and services protobuf files</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.5.0</version>
+        <configuration>
+          <protocExecutable>/usr/bin/protoc</protocExecutable>
+          <protoSourceRoot>${basedir}/proto</protoSourceRoot>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*Vcn*</exclude>
+            <exclude>**/vcn/</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-5</version>
+        <executions>
+          <execution>
+            <id>vcn-jar</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>vcn.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+
+          <!-- this injects individual properties related to the version of the project whose build is running
+            parsedVersion.majorVersion, parsedVersion.minorVersion, and parsedVersion.incrementalVersion are all used
+            to support building the rpm
+            -->
+          <execution>
+            <id>parse-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+            <configuration>
+              <formatBuildNumber>%01d</formatBuildNumber>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.2</version>
+        <configuration>
+          <releaseVersion>
+            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-${parsedVersion.buildNumber}
+          </releaseVersion>
+          <developmentVersion>
+            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-${formattedVersion.nextBuildNumber}-SNAPSHOT
+          </developmentVersion>
+          <tag>
+            v${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-${parsedVersion.buildNumber}
+          </tag>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>postBranch</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>versions-maven-plugin</artifactId>
+            <version>2.4.1</version>
+            <configuration>
+              <newVersion>${parsedVersion.majorVersion}.${formattedVersion.nextMinorVersion}-1-SNAPSHOT</newVersion>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+
+  <distributionManagement>
+    <repository>
+      <id>artifactory-libs-release</id>
+      <name>Artifactory Releases</name>
+      <url>http://artifactory/artifactory/libs-release-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>artifactory-libs-snapshot</id>
+      <name>Artifactory Snapshots</name>
+      <url>http://artifactory/artifactory/libs-snapshot-local</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <scm>
+    <connection>https://git.udev.local/rf/rf-falcon</connection>
+    <developerConnection>scm:git:ssh://git@git.udev.local/rf/rf-falcon.git</developerConnection>
+  </scm>
+</project>

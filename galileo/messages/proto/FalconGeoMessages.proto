@@ -1,0 +1,236 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for the Geo Snap Service in falcon.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName   = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_geo_msg;
+
+// Include message types from other files
+import "FalconCommonMessages.proto";
+
+
+
+////
+// Message sent when a CSNAP request is made.  This message is
+// sent from Falcon Vision to the GeoSnap Service, and 
+// eventually forwarded to the appropriate processing macro. [Geo Snap].
+//
+// msgName: CSNAP, used to identify the message
+// start_sec: Recording start time (J1950 integer seconds).
+// start_fsec: Recording start time (fractional seconds).
+// cf: Center frequency in MHz.
+// duration: Duration of recording in seconds.
+// az: SOI bearing deg. (0-360, 1000 if N/A).
+// lat: SOI latitude deg.
+// lon: SOI longitude deg.
+// soi: Signal scrypt.
+// unit_id: Unit ID used for SOI discrimination
+// message_id: Message ID.
+message CSNAP
+{
+  optional string msgName    = 1 [default = "CSNAP"];
+  optional double start_sec  = 2;
+  optional double start_fsec = 3;
+  optional float  cf         = 4;
+  optional float  duration   = 5;  // AJJ - Float. Why would this be an int?
+  optional int32  az         = 6;
+  optional float  lat        = 7;
+  optional float  lon        = 8;
+  optional string soi        = 9;  // changed from S[16] midas type
+  optional string unit_id    = 10;
+  optional double message_id = 11;
+}
+
+
+////
+// GEO_SNAP_RESPONSE  (formerly CSNAPINFO)
+// Message sent in response to a CSNAP request.  This is an
+// initial acknowledgement to a CSNAP message, sent
+// from Main Control to the Central Server / FalconVision [Geo Snap].
+//
+// msgName: GEO_SNAP_RESPONSE, used to identify the message
+// ack: Indicates if request was accepted or not. If accepted, send channel number, else send -1. 
+// message_id: Message ID, same as from CSNAP message.
+message GeoSnapResponse
+{
+  optional string msgName    = 1 [default = "GEO_SNAP_RESPONSE"];
+  optional int32 ack         = 2;  // changed from D midas type
+  optional double message_id = 3;
+}
+
+
+////
+// GEO_SNAP_DONE (formerly CSNAPD)
+// Message sent when a CSNAPD request is made.  This is a
+// response sent when the CSNAP recording has completed [Geo Snap].
+//
+// msgName: CSNAPD, used to identify the message
+// start_sec: Actual recording start time (J1950 integer seconds)
+//            If -1, recording could not complete in the processing macro
+// start_fsec: Actual recording start time (fractional seconds)
+//             If -1, recording could not complete in the processing macro
+// duration:   Actual duration of recording (seconds)
+// chan: Channel number used to satisfy CSNAP request
+// cf: Center frequency of recording (MHz)
+// soi: Signal scrypt
+// filename: Filename of snap recording (FAST only); blank if an archiver was used.
+//           If this needs to be longer, it can be
+//           but it seems like we should not need more than 16.
+// message_id: Message ID
+message GeoSnapDone
+{
+  optional string msgName    = 1 [default = "GEO_SNAP_DONE"];
+  optional double start_sec  = 2;
+  optional double start_fsec = 3;
+  optional float  duration   = 4;  // AJJ - Change to a float
+  optional int32  chan       = 5;
+  optional float  cf         = 6;
+  optional string soi        = 7;  // changed from S[16] midas type
+  optional string unit_id    = 8;
+  optional string filename   = 9;  // changed from S[16] midas type
+  optional string meta_filename = 10;
+  optional double message_id = 11;
+}
+
+
+////
+// CSNAPQ
+// Message sent when a CSNAPQ request is made.  This is a
+// request to quit a continuous CSNAP geo.  This messages
+// is forwarded from ServiceGeoSnap to the relevant processing macro [Geo Snap].
+//
+// msgName: CSNAPQ, used to identify the message
+// chan: Channel
+// message_id: Message ID
+message CSNAPQ
+{
+  optional string msgName    = 1 [default = "CSNAPQ"];
+  optional int32  chan       = 2; 
+  optional double message_id = 3;
+}
+
+
+////
+// GEO_SNAP_QUIT_RESPONSE (formerly CSNAPQINFO)
+// Message sent in response to a CSNAPQ request.  This is an
+// acknowledgement that the CSNAPQ request was received and completed.
+// Sent from ServiceGeoSnap back to FalconVision [Geo Snap].
+//
+// msgName: GEO_SNAP_QUIT_RESPONSE, used to identify the message
+// ack: 0=Acknowledge, -1=Failure, 1=Complete (Used for a continuing event)
+// chan: Channel
+// message_id: Message ID
+message GeoSnapQuitResponse
+{
+  optional string msgName    = 1 [default = "GEO_SNAP_QUIT_RESPONSE"];
+  optional int32  ack        = 2;  // changed from L type
+  optional int32  chan       = 3;  // changed from L type
+  optional double message_id = 4;
+}
+
+
+////
+// GEO_BURST_DONE (formerly SNAPPD)
+// Message sent when Geo Burst Processing has completed.  This is an
+// acknowledgement that the snapp burst processing has completed
+// and the original CSNAPD should be sent back to FalconVision.
+//
+// msgName: SNAPPD, used to identify the message
+// meta_filename: Filename of snap processing results
+// message_id: Message ID
+// chan: Original channel number used for the CSNAP.
+message GeoBurstDone
+{
+  optional string  msgName       = 1 [default = "GEO_BURST_DONE"];
+  optional string  meta_filename = 2;
+  optional int32   message_id    = 3;
+  optional string  chan          = 4;
+}
+
+
+////
+// GEO_PROCESS (formerly GSNAP)
+// Message sent when a GSNAP request is made.  This message
+// is send from FalconVIsion to the Geo Service.
+// This is the final part of the Geo Snap processing chain [Geo Snap].
+//
+// msgName: GSNAP, used to identify the message
+// chan: Channel number for archiver.
+// start_sec: Recording start time (J1950 integer seconds).
+// start_fsec: Recording start time (fractional seconds).
+// duration: Time to grab in seconds.
+// freq: RF center frequency to grab in MHz.
+// sample_rate: Desired sample rate (sps)
+// track_number: Track number
+// filename: Filename of snap recording (FAST only), 'NONE' if archiver used.
+// message_id: Message ID.
+message GSNAP
+{
+  optional string msgName      = 1 [default = "GSNAP"];
+  optional int32  chan         = 3;  // changed from D type
+  optional double start_sec    = 4;
+  optional double start_fsec   = 5;
+  optional int32  duration     = 6;  // changed from F midas type
+  optional float  freq         = 7;
+  optional float  sample_rate  = 8;
+  optional int32  track_number = 9;   // changed from long
+  optional string soi          = 10;  // changed from S[16] midas type
+  optional double message_id   = 11;
+}
+
+
+////
+// GEO_PROCESS_DONE (formerly GDONE)
+// Message sent when GeoProcess (GSNAP) processing is complete.  This is sent
+// from the Geo Service to Falconvision [Geo Snap].
+//
+// msgName: GEO_PROCESS_DONE, used to identify the message
+// success: 1: Success, -1: Fail 
+// filename: Should not include path or file extension.
+// message_id: Message ID
+message GeoProcessDone
+{
+  optional string msgName      = 1 [default = "GEO_PROCESS_DONE"];
+  optional int32  success      = 3;  // Changed from midas D type
+  optional string filename     = 4;
+  optional double message_id   = 5;
+}
+
+
+////
+// Temporary message to exit the geo service.
+// Service will restart itself after a timeout.
+// (Mainly used for testing and debugging purposes)
+//
+// msgName: GEO_EXIT
+message GEO_EXIT
+{
+  optional string msgName = 1 [default = "GEO_EXIT"];
+}
+
+////
+// Temporary message to reset the geo status parameters
+//
+// msgName: GEO_RESET
+message GEO_RESET
+{
+  optional string msgName = 1 [default = "GEO_RESET"];
+}
+
+////
+// Temporary message for WIFI Testing
+//
+// msgName: WIFI_TEST
+message WifiTest
+{
+  optional string msgName = 1 [default = "WIFI_TEST"];
+}
+
+

@@ -1,0 +1,207 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package pinpoint_msg;
+
+//Signal hit messages
+//id 1000
+message SignalHitRequest
+{
+  optional string           msgName              = 1 [default = "SIGNALHITREQUEST"];
+  optional int32            messageID            = 2;
+  optional int64            time                 = 3;
+  optional int64            timeTol              = 4;
+  optional int64            freq                 = 5;
+  optional int64            freqTol              = 6;
+  optional string           user                 = 7;
+
+  optional string           globalID             = 8;
+}
+
+message SignalHit
+{
+
+  optional string           msgName              = 1 [default = "SIGNALHIT"];
+  optional int32            bytesAmount          = 2;
+  optional int64            freq                 = 3;
+  optional float            azimuth              = 4;
+  optional float            elevation            = 5;
+  optional float            confidence           = 6;
+  optional double           longitude            = 7;
+  optional double           latitude             = 8;
+  optional int64            time                 = 9;
+  optional int32            hitType              = 10;
+
+  optional string           globalID             = 11;
+
+}
+
+//id 1001
+message SignalHitResponse
+{
+
+  optional string           msgName              = 1 [default = "SIGNALHITRESPONSE"];
+  optional int32            messageID            = 2;
+  repeated SignalHit        sigHits              = 3;
+
+  optional bool             continue             = 4;
+  optional string           user                 = 5;
+
+  optional string           globalID             = 6;
+  
+
+}
+
+//SNR threshold messages
+//id 1002
+message SetSNRThresholdRequest
+{
+  optional string           msgName              = 1 [default = "SETSNRTHRESHOLDREQUEST"];
+  optional int32            messageID            = 2;
+  optional int64            threshold            = 3;
+  optional int64            startFreq            = 4;
+  optional int64            stopFreq             = 5;
+  optional string           user                 = 6;
+
+  optional string           globalID             = 7;
+}
+
+//id 1003
+message SetSNRThresholdResponse
+{
+  optional string           msgName              = 1 [default = "SETSNRTHRESHOLDRESPONSE"];
+  optional int32            messageID            = 2;
+  optional bool             success              = 3;
+  optional string           user                 = 4;
+
+  optional string           globalID             = 5;
+}
+
+//SolutionRequest
+//id 1004
+message SignalSolutionRequest
+{
+  optional string           msgName              = 1 [default = "SIGNALSOLUTIONREQUEST"];
+  optional int32            messageID            = 2;
+  optional int64            time                 = 3;
+  optional int64            timeTol              = 4;
+  optional int64            freq                 = 5;
+  optional int64            freqTol              = 6;
+  optional string           user                 = 7;
+
+  optional string           globalID             = 8;
+}
+
+message SignalSolution
+{
+
+  optional string           msgName              = 1 [default = "SIGNALSOLUTION"];
+  optional int32            byteAmount           = 2;
+  optional int64            freq                 = 3;
+  optional float            azimuth              = 4;
+  optional float            elevation            = 5;
+  optional float            confidence           = 6;
+  optional double           longitude            = 7;
+  optional double           latitude             = 8;
+  optional int64            startTime            = 9;
+  optional int64            stopTime             = 10;
+  optional int64            hitType              = 11;
+
+  optional string           globalID             = 12;
+
+}
+
+//id 1005
+message SignalSolutionResponse
+{
+
+  optional string           msgName              = 1 [default = "SIGNALSOLUTIONRESPONSE"];
+  optional int32            messageID            = 2;
+  repeated SignalSolution   sigSolution          = 3;
+
+  optional bool             continue             = 4;
+  optional string           user                 = 5;
+
+  optional string           globalID             = 6;
+  
+
+}
+
+//Set Tune Plan messages
+//freq is center frequency
+//time is dwell time
+message TunePoint
+{
+  optional string           msgName              = 1 [default = "TUNEPOINT"];
+  optional int32            messageID            = 2;
+  optional int64            centerFreq           = 3;
+  optional int64            dwellTime            = 4;
+  optional string           user                 = 5;
+
+  optional string           globalID             = 6;
+}
+
+//SetTunePlanRequest - has repeated tune point parameter
+//id 1006
+message SetTunePlanRequest
+{
+  optional string           msgName              = 1 [default = "SETTUNEPLANREQUEST"];
+  optional int32            messageID            = 2;
+  optional bool             repeat               = 3;
+  repeated TunePoint        tunePlan             = 4;
+  optional string           user                 = 5;
+
+  optional string           globalID             = 6;
+}
+
+//id 1007
+message TunePlanActiveResponse
+{
+  optional string           msgName              = 1 [default = "TUNEPLANACTIVERESPONSE"];
+  optional int32            messageID            = 2;
+  optional bool             active               = 3;
+  optional string           user                 = 4;
+
+  optional string           globalID             = 5;
+}
+
+//id 1008
+message TunePlanUpdateResponse
+{
+  optional string           msgName              = 1 [default = "TUNEPLANUPDATERESPONSE"];
+  optional int32            messageID            = 2;
+  optional bool             success              = 3;
+  optional int64            lowFreq              = 4;
+  optional int64            hiFreq               = 5;
+  optional string           user                 = 6;
+
+  optional string           globalID             = 7;
+}
+
+//set gigahertz mode
+//id 1009
+message SetGHzModeRequest
+{
+  optional string           msgName              = 1 [default = "SETGHZMODEREQUEST"];
+  optional int32            messageID            = 2;
+  optional int32            mode                 = 3;
+  optional string           user                 = 4;
+
+  optional string           globalID             = 5;
+}
+
+//id 1010
+message SetGHzModeResponse
+{
+  optional string           msgName              = 1 [default = "SETGHZMODERESPONSE"];
+  optional int32            messageID            = 2;
+  optional bool             success              = 3;
+  optional string           user                 = 4;
+
+  optional string           globalID             = 5;
+}
+
+
+

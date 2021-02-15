@@ -1,0 +1,56 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for interfacing between the extra fork server
+// and client.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package video_compression_msg;
+
+
+//
+// msgName: IMAGEAVAILABLE, used to identify the message
+// inputPort: Input port to use for ZPipe
+// outputPort: Output port to use for ZPipe
+// imageWidth:
+// imageHeight
+// videoPort: Video output port to use for ZPipe
+// status: Status of the result or REQUEST if sent to the server
+// msgID: ID to use for the return message
+message ImageAvailable
+{ 
+
+  enum Status {
+    AVAILABLE = -1;
+    UNAVAILABLE = 0;
+    PENDING = 1;
+  }
+
+  optional string msgName = 1 [default = "IMAGEAVAILABLE"];
+  optional int32  imageWidth = 2;
+  optional int32  imageHeight = 3;
+  optional int32  videoPort = 4;
+  optional int32  framerate = 5;
+  optional bytes  byteArray = 6;
+  optional Status status = 7;
+  optional int32  msgID = 8;
+  // ID Information about the image
+  optional string eventID   = 10;
+  optional string globalID  = 11;
+  optional string eltex     = 12;
+  optional string soiNum    = 13;
+}
+
+message ImageRequest
+{
+  optional string msgName = 1 [default = "IMAGEREQUEST"];
+  optional int32  msgID = 2;
+  optional string eventID   = 3;
+}
+

@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+//This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+package service_rfswitch_controller;
+
+message rfSwitchControllerConfig {
+    optional string msgName = 1 [default = "service_rfswitch_controller.rfSwitchConfig"];
+    optional string device = 2;
+    optional int32 baud = 3 [default = 115200];
+    optional int32 timeout = 4 [default = 180];
+    optional int32 maxAttempts = 5 [default = 10];
+    optional int32 writeTimeout = 6 [default = 100]; 
+}

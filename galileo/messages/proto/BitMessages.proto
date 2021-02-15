@@ -1,0 +1,39 @@
+// This protocol specification was developed with US Government
+// funding and is licensed to the Government with Unlimited Rights.
+
+syntax = "proto2";
+
+package bit_protos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "bit_protos";
+
+import "ServiceInfrastructureCommon.proto";
+
+////
+// BIT Topics
+message BitRequestTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional BITTestRequest bit_request = 1;
+}
+
+message BitResponseTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional BITTestReport bit_report = 1;
+}
+
+////
+// BITTest Message
+// Currently unused
+message BITTestReport {
+}
+
+////
+// BITTestRequest
+// Ask the EW Processor to perform a BIT Test
+message BITTestRequest {
+}
+

@@ -1,0 +1,337 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Configuration messages for applications in the falcon package.  These are
+// populated by your application's configureMessage() method.  This static
+// method is used so that control does not need to know what applications are
+// available until runtime, removing the need for you to modify control to
+// add a new application.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_app_msg;
+
+// Import common messages
+import "FalconCommonMessages.proto";
+
+////
+// Convenience message for inclusion for common macro options
+//
+// autoControl: State of whether a controller is calling the macro
+// ppsEnable: Whether the PPS is available
+// refEnable: Whether the 10MHz ref is available
+// ifFrequency: IF frequency of the receiver (needed for PIC)
+// writeAux: Aux number of the write aux
+// exportEnable: Flag for enabling or disabiling export products.  It is a
+//               bitwise-or of the ExportFlags parameters.
+// videoLength: Length of the video chunks when exporting video if enabled
+// sensorName: Name of the sensor for remoting if enabled
+// psdIPAddress: PSDs will be streamed to the ip addresses defined, semi-colon
+//               delimited. Define localhost as well.
+// psdPeriod: How often in milliseconds you want to send out a PSD if enabled
+// jpegPeriod: How often in milliseconds you want to send out a JPEG if enabled
+// xmlPeriod: How often in seconds you want to send out XML GPS messages
+// protectArch: Limited protection for archive files
+message MacroOptions
+{
+  enum AutoControl {
+    HEADLESS   = 0;
+    CONTROLLED = 1;
+    AUTO_MODE  = 2;
+  }
+  
+  enum PPS {
+    PPS_OFF = 0;
+    PPS_ON = 1;
+  }
+  
+  enum Ref10m {
+    REF_OFF = 0;
+    REF_ON  = 1;
+  }
+  
+  enum ExportFlags {
+    ENABLE_NONE = 0;
+    ENABLE_VIDEO = 1;
+    ENABLE_JPEGS = 2;
+    ENABLE_PSD = 4;
+    ENABLE_WORKSTATION = 8;
+  }
+  
+  optional AutoControl autoControl = 1;
+  optional PPS    ppsEnable    = 2 [default = PPS_OFF];
+  optional Ref10m refEnable    = 3 [default = REF_OFF];
+  optional double ifFrequency  = 4 [default = 30e6];
+  optional int32  writeAux     = 5 [default = 12];
+  optional int32  exportEnable = 6 [default = 0];
+  optional int32  videoLength  = 7 [default = 20];
+  optional string sensorName   = 8 [default = "sensor"];
+  optional string psdIPAddress = 9 [default = ""];
+  optional int32  psdPeriod    = 10 [default = 200];
+  optional int32  jpegPeriod   = 11 [default = 50];
+  optional int32  xmlPeriod    = 12 [default = 5];
+  optional int32  protectArch  = 13 [default = 0];
+  optional bool midasBundling  = 14 [default = false];
+  optional int32  remoteThresh = 15 [default = 10];
+  optional int32  psdMethod    = 16 [default = -1]; 
+};
+
+////
+// Configuration parameters to send the FAST search app.  These are populated
+// by AppFastSearch.configureMessage() and from applications.xml.
+//
+// msgName: FAST_SEARCH_CONFIG, used to identify the message
+// options: Common macro options
+// charManSvc: Name of the characterizer manager service for this FAST instance
+message FastSearchConfig
+{
+  optional string msgName        = 1 [default = "FAST_SEARCH_CONFIG"];
+  optional MacroOptions options  = 2;
+  optional string charManSvc     = 3;
+  optional bool   enableRemoting = 4 [default = true];
+  optional bool   enableFastPSD  = 5 [default = false];
+  optional int32  fastPSDPeriod  = 6;
+  optional bool   dbActive       = 7;
+  optional string dbUser         = 8;
+  optional string dbName         = 9;
+  optional string dbHost         = 10;
+  optional int32  archiveNumber  = 11;
+  optional string archiveSize    = 12;
+  optional string geo_enabled    = 13 [default = "OFF"];
+  optional string auto_process   = 14 [default = "ON"];
+}
+
+// Message to set the fast search state
+//
+message FastSearchState
+{
+  optional string msgName = 1 [default = "FAST_SEARCH_STATE"];
+  optional bool search    = 2 [default = true];
+}
+
+message NewFastScan
+{
+  optional string msgName = 1 [default = "NEW_FAST_SCAN"];
+  optional double j1970Time = 2;
+  optional int32 channel = 3;
+}
+
+////
+// Configuration parameters to send to Mission Manager.
+// these will be populated by AppMissionManager and global.xml
+message MissionManConfig
+{
+  optional string msgName        = 1 [default = "MISSION_MAN_CONFIG"];
+  optional string dbHost         = 2;
+  optional string dbUser         = 3;
+  optional string dbName         = 4;
+  optional int32 dbPort          = 5;
+  optional int32 starttunernum   = 6 [default = 1];
+  optional int32 numarcs         = 7;
+  optional string arcspread      = 8;
+}
+
+////
+// Configuration parameters to send the processing macro app.  These are
+// populated by AppProcessingMacro.configureMessage() and from applications.xml.
+//
+// msgName: PROC_MACRO_CONFIG, used to identify the message
+// options: Common macro options
+// sysType: Type of system configuration
+// enableIC: Enable or disable interference cancellation
+// timeout: Number of seconds to wait until sending SIGNAL_TIMEOUT
+// slaveTimeout: Number of seconds to wait until sending SLAVE_TIMEOUT
+// extraForkSvc: Extra fork service name to use as target
+// extraForkChan: Extra fork settings for this channel
+// healthRxPort: Whether to enable health and status rx port
+// geo_enabled: Enable Geo processing
+// soiNums: List of SOIs for this processing macro instance
+// associatedSOIs: Associated SOIs to send GPS points
+// assocRepeateSec: Number of seconds until associated search repeats
+message ProcMacroConfig
+{
+  enum SystemType {
+    SYSTEM_TYPE_UNK = 0;
+    SYSTEM_TYPE_SD = 1;
+    SYSTEM_TYPE_RF = 2;
+    SYSTEM_TYPE_VCN = 3;
+    SYSTEM_TYPE_BF = 4;
+    SYSTEM_TYPE_GF = 5;
+  }
+  
+  optional string msgName        = 1  [default = "PROC_MACRO_CONFIG"];
+  optional MacroOptions options  = 2;
+  optional SystemType sysType    = 3  [default = SYSTEM_TYPE_RF];
+  optional bool   enableIC       = 4  [default = false];
+  optional int32  timeout        = 5  [default = 40];
+  optional int32  slaveTimeout   = 6  [default = 300];  
+  optional string extraForkSvc   = 7;
+  optional falcon_common_msg.ExtraForkChannel extraForkChan = 8;
+  optional bool   healthRxPort   = 9  [default = false];
+  optional string geo_enabled    = 10 [default = "OFF"];
+  repeated string soiNums        = 11;
+  repeated string associatedSOIs = 12;
+  optional int32  assocRepeatSec = 13 [default = 1800];
+  optional bool   procTimeoutEnabled = 14 [default = false];
+  optional int32  procTime       = 15 [default = -1];
+  optional int32  blacklistBW    = 16;
+  optional int32  blacklistTime  = 17 [default = 0];
+  optional int32  initialTimeout = 18 [default = 600];
+}
+
+////
+// Configuration parameters to send the wideband record macro app.  These are
+// populated by AppWidebandRecord.configureMessage() and from applications.xml.
+//
+// msgName: WIDEBAND_RECORD_CONFIG, used to identify the message
+// options: Common macro options
+// healthRxPort: Whether to enable health and status rx port
+// geo_enabled: Enable Geo processing
+message WidebandRecordConfig
+{
+  optional string msgName = 1 [default = "WIDEBAND_RECORD_CONFIG"];
+  optional MacroOptions options = 2;
+  optional bool healthRxPort = 3 [default = false];
+  optional string geo_enabled = 4 [default = "OFF"];
+}
+
+
+////
+// Configuration parameters to send the health check app.  These are
+// populated by HealthCheck.configureMessage() and from applications.xml.
+//
+// msgName: HEALTH_CHECK_CONFIG, used to identify the message
+// options: Common macro options
+message HealthCheckConfig
+{
+  optional string msgName = 1 [default = "HEALTH_CHECK_CONFIG"];
+  optional MacroOptions options = 2;
+}
+
+////
+// Configuration parameters to send the mms health app.  These are
+// populated by MmsHealth.configureMessage() and from applications.xml.
+//
+// msgName: MMS_HEALTH_CONFIG, used to identify the message
+// options: Common macro options
+message MmsHealthConfig
+{
+  optional string msgName = 1 [default = "MMS_HEALTH_CONFIG"];
+  optional MacroOptions options = 2;
+}
+
+////
+// Configuration parameters to send the noise test app.  These are
+// populated by NoiseTest.configureMessage() and from applications.xml.
+//
+// msgName: NOISE_TEST_CONFIG, used to identify the message
+// options: Common macro options
+message NoiseTestConfig
+{
+  optional string msgName = 1 [default = "NOISE_TEST_CONFIG"];
+  optional MacroOptions options = 2;
+}
+
+
+////
+// Configuration parameters to send the noise test app.  These are
+// populated by NoiseTest.configureMessage() and from applications.xml.
+//
+// msgName: GPS_HEALTH_CONFIG, used to identify the message
+// options: Common macro options
+message GpsHealthConfig
+{
+  optional string msgName = 1 [default = "GPS_HEALTH_CONFIG"];
+  optional MacroOptions options = 2;
+}
+
+
+////
+// Configuration parameters to send the antenna control app.  These are populated
+// by AppAntennaControl.configureMessage() and from applications.xml.
+//
+// msgName: ANTENNA_CONTROL_CONFIG, used to identify the message
+message AntennaControlConfig
+{
+  optional string msgName = 1 [default = "ANTENNA_CONTROL"];
+}
+
+
+////
+// Configuration parameters to send the vcn app.  These are populated
+// by AppVcn.configureMessage() and from applications.xml.
+//
+// msgName: VCN_CONFIG, used to identify the message
+message VcnConfig
+{
+  optional string msgName = 1 [default = "VCN_CONFIG"];
+}
+
+////
+// Configuration parameters to send the generic macro app. These are populated
+// by AppGenericMacro.configureMessage() and from applications.xml.
+//
+// msgName: GENERIC_MACRO_CONFIG, used to identify the message
+message GenericMacroConfig
+{
+  optional string msgName = 1 [default = "GENERIC_MACRO_CONFIG"];
+}
+
+
+////
+// Configuration parameters to send the settings app.  These are populated
+// by AppSettings.configureMessage() and from applications.xml.
+//
+// msgName: SETTINGS_CONFIG, used to identify the message
+message SettingsConfig
+{
+  optional string msgName = 1 [default = "SETTINGS_CONFIG"];
+}
+
+
+////
+// Configuration parameters to send the Kep Svisor GUI app.  These are populated
+// by AppKepSvisor.configureMessage() and from applications.xml.
+//
+// msgName: KEP_SVISOR_CONFIG, used to identify the message
+message KepSvisorConfig
+{
+  optional string msgName = 1 [default = "KEP_SVISOR_CONFIG"];
+}
+
+message ZMQPubDemoConfig
+{
+  optional string msgName     = 1 [default = "ZMQ_PUB_DEMO_CONFIG"];
+  optional int32  maxRequests = 2 [default = 1];
+  optional string address     = 3 [default = ""];
+  optional MacroOptions options = 4;
+}
+
+message ZMQSubDemoConfig
+{
+  optional string msgName       = 1 [default = "ZMQ_SUB_DEMO_CONFIG"];
+  optional int32  maxProducts   = 2 [default = 1];
+  optional string address       = 3 [default = ""];
+  optional MacroOptions options = 4;
+}
+
+////
+// Configuration parameters to send the wifi app.
+// This processing is part of the GeoSnap chain
+//
+// msgName: WIFI_CONFIG
+// options: Common macro options
+// geo_enabled: Enable Geo processing
+message WifiConfig
+{
+  optional string       msgName     = 1 [default = "WIFI_CONFIG"];
+  optional MacroOptions options     = 2;
+  optional string       geo_enabled = 3 [default = "OFF"];
+}
+
+

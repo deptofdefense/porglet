@@ -1,0 +1,26 @@
+syntax = "proto2";
+
+package rx_msg;
+
+message ReceiverRequest
+{
+    optional int32 appID = 1;
+}
+
+message ReceiverRelease
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}
+
+message ReceiverAcquired
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}
+
+message ReceiverReleased
+{
+    optional int32 appID = 1;
+    optional int32 channel = 2;
+}

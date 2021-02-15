@@ -1,0 +1,150 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Mesages used to send PSDs and other data for remoting. These are used by 
+// type2000_to_spread primitive in the falcom option tree.
+package falcon_psd;
+
+////
+// Classification Header message for PSD
+message ClassificationHeader{
+  enum ClassLevel {
+    UNCLASSIFIED = 1;
+    CONFIDENTIAL = 2;
+    SECRET = 3;
+    TOPSECRET = 4;
+  }
+  
+  enum Compartment {
+    SI = 1;
+    TK = 2;
+  }
+  
+  enum Releasability {
+  	FOUO = 1;
+  	ROK = 2;
+  	EY3 = 3;
+    EY4 = 4;
+    EY5 = 5;
+    EY9 = 6;
+    NOFOR = 7;
+  } 
+  
+  required ClassLevel classification = 1;
+  optional Compartment compartment = 2;
+  optional Releasability rel_to = 3; 
+    
+}
+
+////
+// PSD Header Message. This contains key information for the PSD.
+//
+// uuid: unique id. This will match the uuid returned from the subscribe for PSD Operation
+// start_frequency: Start Frequency of the PSD in Hz
+// end_frequency: End Frequency of the PSD in Hz
+// resolution_bandwidth: Resolution BW in Hz
+// num_points: number of fft points
+// duration: Length of the psd
+// channel: Channel number
+// highlight_start: Start frequency of the PSD's highlighted section in Hz
+// highlight_end: End frequency of the PSD's highlighted section in Hz
+// saturation: RX Saturcation value (1, 2, or 3 for green, yellow, or red)
+// psd_max: max value of the psd plot region on the Y axis
+// psd_min: min value of the psd plot region on the Y axis
+message PSDHeader {
+	required string uuid = 1;
+	required double start_frequency = 2;
+	required double end_frequency = 3;
+	required double resolution_bandwidth = 4;
+	required int32  num_points = 5;
+	required double duration = 6;
+	required int32  channel = 7;
+	optional int32  highlight_start = 8;
+	optional int32  highlight_end = 9;
+    optional int32  saturation = 10;
+    optional double psd_max = 11;
+    optional double psd_min = 12;
+}
+
+////
+// PSD message.  This will contain the headers as well as the raw PSD data.
+//
+// msgName: PSD, used to identify the message
+// classification_header: Classification Header message
+// timestamp: Timestamp in fractional seconds
+// uuid: unique id. This will match the uuid returned from the subscribe for PSD Operation
+// psd_header: PSD Header message
+// fft_data: Raw fft data
+message PSD {
+    optional string msgName = 1 [default = "PSD"];
+    required ClassificationHeader classification_header = 2;
+	required double timestamp = 3;
+	required string uuid = 4;
+    optional PSDHeader psd_header = 5;
+    repeated float fft_data = 6 [packed=true];    
+}
+
+////
+// Dense PSD message.  This will contain the headers as well as the dense PSD data. This 
+// is basically quantized so that we can push smaller amounts of data through.
+//
+// msgName: DENSE_PSD, used to identify the message
+// classification_header: Classification Header message
+// timestamp: Timestamp in fractional seconds
+// uuid: unique id. This will match the uuid returned from the subscribe for PSD Operation
+// psd_header: PSD Header message
+// min: minimum value that a byte of 0 means
+// step: Step size between each byte for recalculation
+// fft_data: Raw fft data
+message DensePSD {
+    optional string msgName = 1 [default = "DENSE_PSD"];
+    required ClassificationHeader classification_header = 2;
+    required double timestamp = 3;
+    required string uuid = 4;
+    optional PSDHeader psd_header = 5;
+    required float min = 6;
+    required float step = 7;   
+    repeated float fft_data = 8;
+}
+
+////
+// BitFrame Header Message. This contains key information for the BitFrame.
+//
+// uuid: unique id. This will match the uuid returned from the subscribe for PSD Operation
+// num_points: number of fft points
+// duration: Length of the psd
+// channel: Channel number
+// bit_max: max value of the data region on the Y axis
+// bit_min: min value of the data region on the Y axis
+// appName: Name of the application this rast goes to
+message BitFrameHeader {
+	required string uuid = 1;
+	required int32  num_points = 2;
+	required double duration = 3;
+	required int32  channel = 4;
+    optional double bit_max = 5;
+    optional double bit_min = 6;
+    optional string appName = 7;
+}
+
+////
+// PSD message.  This will contain the headers as well as the raw PSD data.
+//
+// msgName: BIT_FRAME, used to identify the message
+// classification_header: Classification Header message
+// timestamp: Timestamp in fractional seconds
+// uuid: unique id. This will match the uuid returned from the subscribe for PSD Operation
+// header: PSD Header message
+// bit_data: BIT  data
+message BitFrame {
+    optional string msgName = 1 [default = "BIT_FRAME"];
+    required ClassificationHeader classification_header = 2;
+	required double timestamp = 3;
+	required string uuid = 4;
+    optional BitFrameHeader header = 5;
+    repeated int32 bit_data = 6;
+}
+

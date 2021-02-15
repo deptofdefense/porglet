@@ -1,0 +1,136 @@
+syntax = "proto2";
+
+import "Users.proto";
+import "ServiceInfrastructureCommon.proto";
+
+package com.srcinc.ngi.data;
+
+// Description:
+// -   The BIT Manifest message provides a tree structure that contains the
+// identifying information for every BIT field that will be sent by the sensor.
+// ................
+// Direction:
+// -   From Sensor
+// ................
+// Send Conditions:
+// -   On Connect
+// -   On Change
+message BitManifest
+{
+
+   // information about a property
+   message BitProperty
+   {
+      // all possible units for properties
+      enum Units
+      {
+         UNITS_UNKNOWN = 0; //Unknown
+         UNITS_VOLTS = 1; //Volts
+         UNITS_AMPS = 2; //Amps
+         UNITS_DB = 3; //Decibels
+         UNITS_CELSIUS = 4; //Degrees Celsius
+         UNITS_HZ = 5; //Hertz
+         UNITS_TIMESPAN = 6; //A duration in seconds
+         UNITS_TIMESPEC = 7; //Seconds since UTC epoch
+         UNITS_RADIANS = 8; //Angle in radians
+         UNITS_KBPS = 9; //Kilobits per second
+         UNITS_PERCENT = 10; //Percentage
+         UNITS_ECEF = 11; //Earth Center, Earth Fixed
+      }
+
+      enum Types
+      {
+         TYPE_UNKNOWN = 0;
+         TYPE_BOOL = 1;
+         TYPE_INT = 2;
+         TYPE_DOUBLE = 3;
+         TYPE_STRING = 4;
+         TYPE_DOUBLE_REPEATED = 5;
+      }
+
+      // The min/max thresholds for displaying values. Not all properties will
+      // use all threshold fields.
+      message Thresholds
+      {
+         // The threshold above which a value is faulted
+         optional double max_faulted = 1;
+
+         // The threshold above which a value is degraded
+         optional double max_degraded = 2;
+
+         // The threshold below which a value is degraded
+         optional double min_degraded = 3;
+
+         // The threshold below which a value is faulted
+         optional double min_faulted = 4;
+      }
+
+      // The identifier for this property. BIT values will be sent with this ID.
+      required int32 id = 1;
+
+      // The string that should be displayed for this property
+      required string display_name = 2;
+
+      // A string that describes this property
+      optional string description = 3;
+
+      // The units for the value associated with this field
+      optional Units units = 4;
+
+      // The type for the value associated with this field
+      optional Types type = 5;
+
+      // The level that should be required to view this property. This only needs
+      // to be included if the property requires a higher level of permissions
+      // than the node it is associated with.
+      optional ngi.common.UserLevel min_user_level = 6;
+
+      // The values that constitute the field being degraded/faulted. These
+      // fields allow for values to be graphed.
+      optional Thresholds thresholds = 7;
+
+      // The name of the group this property should fall into (if any).
+      optional string group_name = 8;
+
+      // The number of historical entries that are valid for this property. This
+      // can be used for graphing historical data.
+      optional int32 history_length = 9;
+   }
+
+   // A node in the BIT tree. This can contain properties and/or other nodes.
+   message BitNode
+   {
+      // The identifier for the node. BIT values will be sent with this ID.
+      required int32 id = 1;
+
+      // The string that should be displayed to represent this node
+      required string display_name = 2;
+
+      // A string that describes the node
+      optional string description = 3;
+
+      // The level that should be required to view this node
+      optional ngi.common.UserLevel user_level = 4;
+
+      // The properties that are associated with this node
+      repeated BitProperty properties = 5;
+
+      // The nodes that fall under this node within the BIT Tree structure
+      repeated BitNode nodes = 6;
+
+      // This is true if this node should be considered the top level status for
+      // the entire BIT tree. There may be multiple nodes with top level status.
+      optional bool is_top_level_status = 7;
+   }
+
+   // The top level nodes for the tree. All sub-nodes are contained within these nodes.
+   repeated BitNode root_node = 1;
+}
+
+message BitManifestTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional BitManifest bit_manifest = 1;
+
+}
+

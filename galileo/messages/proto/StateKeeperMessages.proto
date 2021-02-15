@@ -1,0 +1,72 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package raptorx_msg;
+
+message StateKeeperStatus
+{
+  optional string           msgName              = 1 [default = "StateKeeperStatus"];
+  optional string           state_name           = 2;
+}
+
+//messages for tables in the systemdb database
+message Detection
+{
+  optional string           msgName              = 1 [default = "Detection"];
+  optional int64            id                   = 2;
+  optional int64            characterization_id  = 3;
+  optional string           signal               = 4;
+  optional string           feed                 = 5;
+  optional int64            time_whole           = 6;
+  optional double           time_fractional      = 7;
+  optional double           duration             = 8;
+  optional double           center_frequency     = 9;
+  optional double           bandwidth            = 10;
+  optional double           azimuth              = 11;
+  optional double           elevation            = 12;
+  optional double           snr                  = 13;
+  optional bool             hidden               = 14;
+  optional int32            wrindex              = 15;
+  optional string           globalID             = 16;
+}
+
+message SensorGPSPosition
+{
+
+  optional string           msgName              = 1 [default = "SensorGPSPosition"];
+  optional float            lat                  = 2;
+  optional float            lon                  = 3;
+  optional float            alt                  = 4;
+  optional float            major                = 5;
+  optional float            minor                = 6;
+  optional float            vector               = 7;
+  optional string           timestamp            = 8;
+
+}
+
+message ActionStatus
+{
+  optional string           msgName              = 1 [default = "ActionStatus"];
+  optional string           executing            = 2;
+  optional string           ampOn                = 3;
+  optional string           strikeAssessment     = 4; 
+  optional string           underAttack          = 5;
+  optional string           jamType              = 6;
+  optional float            jamFreq              = 7;
+}
+
+
+message SystemStatus
+{
+  optional string           msgName              = 1 [default = "SystemStatus"];
+  optional string           hardware_status      = 2;
+  optional string           software_status      = 3;
+  optional string           gps_lock             = 4;
+}
+
+message Ping
+{
+  optional string           msgName              = 1 [default = "Ping"];
+}

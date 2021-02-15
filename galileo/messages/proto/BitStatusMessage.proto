@@ -1,0 +1,71 @@
+syntax = "proto2";
+
+import "StatusCommon.proto";
+import "ServiceInfrastructureCommon.proto";
+
+package com.srcinc.ngi.data;
+
+// Description:
+// -   The BIT Status message provides values for BIT properties. The values
+// sent in this message will correspond with the properties sent in the BIT
+// Manifest message.
+// ................
+// Direction:
+// -   From Sensor
+// ................
+// Send Conditions:
+// -   As Needed
+message BitStatus
+{
+
+   // Information about the current status of a BIT entry. An entry may be either
+   // a Node or a Property. Nodes never have values.
+
+   message BitEntry
+   {
+
+      // Type used when a repeated value is needed (ECEF, LLA, RAE, etc...)
+      message RepeatedDoubleType
+      {
+         // The floating point values
+         repeated double value_double = 1;
+      }
+
+      // The ID for this entry. This will match with an entry in the BIT Manifest
+      required int32 id = 1;
+
+      // The status of the field
+      optional Status status = 2;
+
+      //TODO: //oneof oneof_bit_value
+      //{
+         // The value if the field is a boolean
+      optional bool value_bool = 3;
+
+      // The value if the field is an integer
+      optional int32 value_integer = 4;
+
+      // The value associated with the field if applicable
+      optional double value_double = 5;
+
+      // A string that indicates the value for this field if applicable
+      optional string value_string = 6;
+
+      // A repeated value type used mainly for coordinate systems
+      optional RepeatedDoubleType value_double_repeated = 7;
+      //}
+
+   }
+
+   // A list of BIT status entries
+   repeated BitEntry bit_values = 1;
+}
+
+message BitStatusTopic
+{
+    optional service_infrastructure.Header header = 100;
+    optional BitStatus bit_status = 1; 
+
+}
+
+

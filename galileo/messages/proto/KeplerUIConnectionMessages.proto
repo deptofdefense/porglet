@@ -1,0 +1,350 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+import "ServiceInfrastructureCommon.proto";
+
+////////////////////
+//UI Wrapper Message
+////////////////////
+
+message UItoKeplerMessage
+{
+  optional service_infrastructure.Header header = 100;
+
+  optional UIAck                    msgUIAck                    = 4;
+  optional UINack                   msgUINack                   = 5;
+  optional ICDVersionRequest        msgICDVersionRequest        = 6;
+  optional DBVersionRequest         msgDBVersionRequest         = 7;
+  optional DBCredentialsRequest     msgDBCredentialsRequest     = 8;
+  optional UIConnectRequest         msgUIConnectRequest         = 9;
+  optional UIDisconnect             msgUIDisconnect             = 10;
+  optional UIVideoRequest           msgUIVideoRequest           = 11;
+  optional UIGeoInformationRequest  msgUIGeoInformationRequest  = 12;
+  optional UICommandRequest         msgUICommandRequest         = 13;
+  optional UICeaseBuzzer            msgUICeaseBuzzer            = 14;
+  optional UISetDefaultSchedule     msgUISetDefaultSchedule     = 15;
+  optional UIOptionsRequest         msgUIOptionsRequest         = 16;
+    
+}
+
+////////////////////
+//Kepler Wrapper Message
+////////////////////
+
+message KeplertoUIMessage
+{
+
+  optional service_infrastructure.Header header = 100;
+  optional UIAck                    msgUIAck                    = 4;
+  optional UINack                   msgUINack                   = 5;
+  optional ICDVersionResponse       msgICDVersionResponse       = 6;
+  optional DBVersionResponse        msgDBVersionResponse        = 7;
+  optional DBCredentialsResponse    msgDBCredentialsResponse    = 8;
+  optional UIConnectResponse        msgUIConnectResponse        = 9;
+  optional UISignalEvent            msgUISignalEvent            = 10;
+  optional UIVideoResponse          msgUIVideoResponse          = 11;
+  optional UIGeoInformation         msgUIGeoInformation         = 12;
+  optional UIOptions                msgUIOptions                = 13;
+  optional UIOptionDelete           msgUIOptionDelete           = 14;
+  optional EWStatus                 msgEWStatus                 = 15;
+  optional KeplerHeartBeat          msgKeplerHeartBeat          = 16;  
+  
+}
+
+////////////////////
+//These are messages that an external GUI interface uses to connect to the Kepler system and request access to the database
+////////////////////
+
+//acknowledgement message
+message UIAck
+{
+  optional string           msgName              = 1 [default = "UIAck"];
+  optional int64            seqNumber            = 2;
+}
+
+//negative acknowledgement message
+message UINack
+{
+    
+  enum ErrorCode {
+    InvalidMsg = 0;
+    WrongSeqNum = 1;
+    UnrecognizedMsg = 2;
+  }
+    
+  optional string           msgName              = 1 [default = "UINack"];
+  optional int32            seqNumber            = 2;
+  optional ErrorCode        errorCode            = 3;
+  optional string           reason               = 4;
+}
+
+//request to be sent DBVersionResponse message with ICD info
+message ICDVersionRequest
+{
+  optional string           msgName              = 1 [default = "ICDVersionRequest"];
+  optional string           senderName           = 2;
+}
+
+//request to be sent DBVersionResponse message with Database connection info
+message DBVersionRequest
+{
+  optional string           msgName              = 1 [default = "DBVersionRequest"];
+  optional string           senderName           = 2;
+}
+
+//messages for tables in the systemdb database
+message ICDVersionResponse
+{
+  optional string           msgName              = 1 [default = "ICDVersionResponse"];
+  optional int64            major                = 2 [default = 0];
+  optional int64            minor                = 3 [default = 0];
+  optional int64            patch                = 4 [default = 1];
+  optional string           date                 = 5;
+  optional string           info                 = 6;
+}
+
+message DBVersionResponse
+{
+  optional string           msgName              = 1 [default = "DBVersionResponse"];
+  optional int64            major                = 2 [default = 0];
+  optional int64            minor                = 3 [default = 0];
+  optional int64            patch                = 4 [default = 1];
+  optional string           date                 = 5;
+  optional string           info                 = 6;
+}
+
+//request to Kepler to be sent database credentials
+message DBCredentialsRequest
+{
+  optional string           msgName              = 1 [default = "DBCredentialsRequest"];
+  optional string           senderName           = 2;
+}
+
+//Kepler send the credentials needed to access the database
+message DBCredentialsResponse
+{
+  optional string           msgName              = 1 [default = "DBCredentialsResponse"];
+  optional string           hostName             = 2;
+  optional string           ip                   = 3;
+  optional string           dbName               = 4;
+  optional string           dbUser               = 5;
+  optional string           dbPassword           = 6;
+  optional string           dbPort               = 7;
+}
+
+//message sent from UI to tell Kepler system it wants to connect
+message UIConnectRequest
+{
+  optional string           msgName              = 1 [default = "UIConnectRequest"];
+  optional string           senderName           = 2;
+}
+
+//message sent from  Kepler to UI to tell system its connected
+message UIConnectResponse
+{
+  optional string           msgName              = 1 [default = "UIConnectResponse"];
+  optional string           connectionID         = 2 [default = "defaultConnectionID"];
+}
+
+
+
+//message sent from UI to tell Kepler system it is disconnecting
+message UIDisconnect
+{
+  optional string           msgName              = 1 [default = "UIDisconnect"];
+  optional string           senderName           = 2;
+  optional string           connectionID         = 3 [default = "defaultConnectionID"];
+  optional string           test                 = 4 [default = "testString"];
+}
+
+////////////////////
+//messages to send signal/detection information to the connected UI
+////////////////////
+
+
+//adapted from remoting messages
+message UISignalEvent
+{
+  enum Type {
+    SIGDET = 0;
+    SIGUP = 1;
+    SIGDOWN = 2;
+    SIGTIMEOUT = 3;
+  }
+
+  optional string           msgName              = 1 [default = "UISignalEvent"];
+  optional int32            channel              = 2;
+  optional string           eventID              = 3;
+  optional string           timestamp            = 4;
+  optional string           soiNum               = 5;
+  optional float            rfMHz                = 6;
+  optional float            antAz                = 7 [default = 0];
+  optional float            antEl                = 8 [default = 0];
+  optional string           globalId             = 9;
+  optional Type             eventType            = 10;
+  optional string           name                 = 11;
+
+}
+
+//request to Kepler for demod info
+message UIVideoRequest
+{
+  optional string           msgName              = 1 [default = "UIVideoRequest"];
+  optional string           eltex                = 2;
+  optional string           connectionID         = 3 [default = "defaultConnectionID"];
+}
+
+//response to UI with demod info (port number)
+message UIVideoResponse
+{
+  optional string           msgName              = 1 [default = "UIVideoResponse"];
+  optional string           eltex                = 2;
+  optional int64            portNumber           = 3;
+}
+
+//Request to be sent Geo information for a signal
+message UIGeoInformationRequest
+{
+  optional string           msgName              = 1 [default = "UIGeoInformationRequest"];
+  optional string           globalId             = 2;
+  optional string           connectionID         = 3 [default = "defaultConnectionID"];
+}
+
+//geo information to UI, adapted from geopoint message in DSMessages.proto
+message UIGeoInformation
+{
+  optional string           msgName              = 1 [default = "UIGeoInformation"];
+  optional double           lat                  = 2 ;
+  optional double           lon                  = 3 ;  
+  optional double           majoraxis            = 4 ;
+  optional double           minoraxis            = 5 ;   
+  optional double           orientation          = 6 ;
+  optional double           altitude             = 7 ;
+  optional int32            altConf              = 8 ;
+  optional double           velocity             = 9 ;
+  optional int32            vConf                = 10 ;
+  optional double           heading              = 11 ; 
+  optional int32            headConf             = 12 ;
+  optional string           covariance           = 13 ;
+  optional string           globalId             = 14 ;
+  optional string           geoTime              = 15 ;
+  optional string           classification       = 16 [default = ""] ;
+}
+
+////////////////////
+//Control Messages from UI to Kepler
+////////////////////
+
+//send message to Kepler to execute an attack
+message UICommandRequest
+{
+
+  optional string           msgName              = 1 [default = "UICommandRequest"];
+  optional string           globalId             = 2;
+  required string           effect               = 3;
+  repeated Parameter        parameter            = 4;
+  optional string           antenna              = 5;
+  optional bool             active               = 6;
+  optional string           resID                = 7;
+  optional string           signalName           = 8;
+  optional string           connectionID         = 9 [default = "defaultConnectionID"];
+
+
+}
+
+// Parameter is any additional input a user needs to provide to perform an effect (e.g. frequency, bandwidth, etc.)
+message Parameter {
+    optional string msgName = 1 [default = "EW_PARAMETER"];
+    required string name = 2;
+    required string value = 3;
+}
+
+////
+// UIOptionsRequest - Request to send UIOptions message. No CommonResponse message expected.
+message UIOptionsRequest {
+  optional string		msgName 	= 1 [default = "UIOptionsRequest"];
+  optional string	 	connectionID 	= 2 [default = "defaultConnectionID"];
+}
+
+//Each target has a list of effects that are applicable to it.
+//If global id is not set, those effects are consided signal agnostic and may be selected without an active event
+message UIOption {
+    enum DetectionSource {
+        EXTERNAL = 0;
+        DETECTION = 1;
+        EVENT = 2;
+        THUNDERBIRD = 3;
+    }
+    optional string msgName = 1 [default = "UIOption"];
+    optional string signalName = 2;
+    repeated string effect = 3;
+    optional DetectionSource detectionSource = 4;
+    optional string globalId = 5;
+}
+
+//List of UI options to choose from. globalId is unique identifier of event, or hit
+message UIOptions {
+    optional string msgName = 1 [default = "UIOptions"];
+    repeated UIOption uiopt = 2;
+}
+
+// Status message saying that a specific global ID is no longer being tracked
+message UIOptionDelete {
+    optional string msgName = 1 [default = "UIOptionDelete"];
+    optional string globalId = 2;
+}
+
+//UI cease buzzer to Kepler
+message UICeaseBuzzer
+{
+  optional string           msgName              = 1 [default = "UICeaseBuzzer"];
+  optional string           connectionID         = 2 [default = "defaultConnectionID"];
+}
+
+// Current status
+// Send on change only, unless currently active  (in which case send once every 5 seconds)
+message EWStatus {
+    optional string msgName = 1 [default = "EWStatus"];
+    repeated OutputChannelStatus outputChannelStatus = 2;
+    optional string timestamp = 3;
+}
+
+message OutputChannelStatus {
+    enum TransmitState {
+        UNAVAILABLE = 0;
+        PENDING = 1;
+        AVAILABLE = 2;
+    }
+    optional string msgName = 1 [default = "EW_OUTPUT_CHANNEL_STATUS"];
+    optional string effect = 2;
+    optional double transmitFreq = 3;
+    optional string globalId = 4;
+    optional string antenna = 5;
+    optional TransmitState state = 6;
+    optional double powerMeter = 7;
+    optional string resID = 8;
+    optional string signalName = 9;
+}
+
+//////////////////////////////////////
+//Other Messages from UI to Kepler 
+/////////////////////////////////////
+//set the rx schedule default file
+message UISetDefaultSchedule
+{
+
+  optional string           msgName              = 1 [default = "UISetDefaultSchedule"];
+  optional int32            channelNum           = 2;
+  optional string           fileName             = 3;
+  optional string           connectionID         = 4;
+
+}
+
+message KeplerHeartBeat
+{
+  optional string           msgName              = 1 [default = "KeplerHeartBeat"];
+}
+
+

@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package com.srcinc.ngi.data;
+
+// The possible values for the status of an item
+enum Status
+{
+   STATUS_NOT_APPLICABLE = 0; // The status field does not apply for the given item
+   STATUS_UNKNOWN = 1; // The status of the item is currently unknown
+   STATUS_NORMAL = 2; // The item is functioning properly
+   STATUS_DEGRADED = 3; // The item is degraded
+   STATUS_FAULTED = 4; // The item is not functioning properly
+}

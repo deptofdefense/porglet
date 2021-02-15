@@ -1,0 +1,47 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// This file contains messages which would be used to either send a request to 
+// RxScheduler or the response for executing that request
+////
+package rx_command_msg;
+
+////
+// Rx Command Request
+//
+// channel: Channel which the message wants to change
+// frequency: in Hz?
+// gain: in dB
+// guid: unique ID used to identify individual requests
+// priority: priority to help service know the importance in queue
+// enabled: toggle to help remove a request from the priority queue
+message RxCommandRequest
+{
+  optional string msgName	 = 1 [default = "RXCOMMANDREQUEST"];
+  optional int32 channel	 = 2;
+  optional float frequency	 = 3;
+  optional int32 gain		 = 4;
+  optional string guid		 = 5 [default = 'UNSPECIFIED'];
+  optional int32 priority	 = 6 [default = 100];
+  optional bool enabled		 = 7;
+  optional int32 gainMode       = 8;
+}
+
+////
+// Message used to send a response that the request has been executed/queded
+// within RxScheduler
+//
+message RxCommandResponse
+{ 
+  optional string msgName	 = 1 [default = "RXCOMMANDRESPONSE"];
+  optional int32 channel	 = 2;
+  optional float frequency	 = 3;
+  optional int32 gain		 = 4;
+  optional string guid		 = 5 [default = 'UNSPECIFIED'];
+  optional int32 priority	 = 6 [default = 100];
+  optional bool enabled		 = 7;
+  optional int32 gainMode       = 8;
+}

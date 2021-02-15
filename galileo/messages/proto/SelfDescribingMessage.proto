@@ -1,0 +1,46 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.rfcontrol";
+
+////
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package msg;
+
+////
+// The purpose of the Message is to act a wrapper for all messages, since
+// protobuf would otherwise not know the received message type.  This is
+// automatically wrapped when sending with the MessagingSupport methods.
+// The following is an example of usage.
+//
+// Sending:
+//    import control.messages.py.MainControlMessages_pb2 as ctrl_msg
+//    import control.common.MessagingSupport as messaging
+//
+//    message = ctrl_msg.Register()
+//    message.id = 'IDENTIFIER'
+//    messaging.sendMessage (mailbox, message, 'DESTINATION')
+//
+// Receiving:
+//    import control.messages.py.MainControlMessages_pb2 as ctrl_msg
+//    import control.common.MessagingSupport as messaging
+//
+//    while mailbox.poll() > 0:
+//        header,sdmsg = messaging.receiveMessage (mailbox)
+//        if sdmsg.type == 'REGISTER':
+//            message = ctrl_msg.Register.FromString (sdmsg.message)
+//            print message.id
+//
+// id: A unique identifier for this message (useful for pseudo-synchronous operations)
+// type: Type of message that was sent (its msgName parameter)
+// message: Serialized content of the message
+message Message
+{
+  optional double id	  = 1 [default = 0];
+  optional string type    = 2 [default = ""];
+  optional bytes  message = 3;
+}
+

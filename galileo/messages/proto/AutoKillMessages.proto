@@ -1,0 +1,42 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package to control and communicate with antenna,
+// rotor and RF switch resources.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+
+package auto_kill_msg;
+
+message StateResponse
+{
+    optional string msgName = 1 [default = "STATERESPONSE"];
+    optional bool success = 2 [default = false];
+    optional int32 errorValue = 3 [default = 0];
+    optional string taskName = 4;
+}
+
+message OverrideState
+{
+    optional string msgName     = 1 [default = "OVERRIDESTATE"];
+    optional int32  appID       = 2;
+    optional string newState    = 3;
+}
+message COAConfig
+{
+    optional string msgName 	= 1 [default = "COACONFIG"];
+    repeated string xmlCOA 	= 2;
+}
+
+message AutoKillGUI
+{
+    optional string msgName = 1 [default = "AUTOKILLGUI"];
+    optional string state = 2;
+    optional string transition = 3;
+}

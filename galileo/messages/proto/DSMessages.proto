@@ -1,0 +1,284 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Interface messages for operational communication between 
+// Copper Spike and Talon Grizzly
+package ds_msg;
+
+////
+// Describes the satellite associate with a specific signal.  
+// Message for a single Active Signal.  Used as a component of
+// a larger message
+//
+// ssc: satellite catalog Number
+// polarization: polarization of this feed (V, H, RHCP, LHCP)
+// band: Ku-band range for selected feed (KUHIGH, KULOW, or C)
+// satName: name of satellite associated with selected feed
+//                    (for future utility)
+// rfSwitchIn: Rf switch input number os selected feed
+message SatInfo
+{
+  optional int32  ssc          = 1;
+  optional string polarization = 2;
+  optional string band         = 3;
+  optional string satName      = 4 [default = ""];
+  optional int32  rfSwitchIn   = 5 [default = -1];
+}
+
+////
+// Describes the metadata associated with a specific signal.  
+// Message for a single Active Signal.  Used as a component of
+// a larger message
+// 
+// frequency: Detection RF of the signal in Hz
+// bandwidth: estimated bandwidth of the signal in Hz
+// snr: estimated signal to noise ratio
+// firstTime: time the signal was first detected 
+//                    (YYYY:MM:DD::HH:MM:SS.SSSSSS)
+// lastTime: time the signal was most recently detected 
+//                    (YYYY:MM:DD::HH:MM:SS.SSSSSS)
+// numDetects: total number of times this signal has been detected
+//             while it has been active
+// sigType: type of signal detected if the signal has been identified
+//                  (CONTROL, RETURN, UNK)
+// sigUUID: generated UUID for this signal
+// ignore: should this signal be ignored for doppler detection by TG
+message Detection
+{
+  optional double frequency  = 1; 
+  optional double bandwidth  = 2;
+  optional double snr        = 3; 
+  optional string firstTime  = 4;
+  optional string lastTime   = 5;
+  optional int64  numDetects = 6; 
+  optional string sigType    = 7 [default = "UNK"];
+  optional string sigUUID    = 8;
+  optional bool   ignore     = 9 [default = false];
+}
+
+
+
+////
+// Message from TG indicating Signal has been identified which 
+// exhibits significant Doppler Shift.  Message will only occur as
+// a tip on a detection previously made by CS.  CS will assign a 
+// sigUUID which will allow systems to identify frequency and satinfo
+// for the signal in question
+//
+// msgName: DOPPLER_TIP, used to identify the message
+// dopplershift: Maximum detected doppler shift
+// timestamp: Intercept time (YYYY:MM:DD::HH:MM:SS.SSSSSS)
+// lat: SOI latitude deg.
+// lon: SOI longitude deg.
+// majoraxis: Distance of geo error ellipse's major axis in m
+// minoraxis: Distance of geo error ellipse's minor axis in m
+// orientation: Azimuthal orientation of geo error ellipse in degrees
+// sigUUID: UUID which has been assigned to the detection 
+//          by CS system in detection message 
+// classification: classification of message
+// msgID: Unique ID associated to this doppler tip
+message DopplerTip
+{
+  optional string msgName        = 1 [default = "DOPPLER_TIP"];
+  optional double dopplershift   = 2; 
+  optional string timestamp      = 3;
+  optional double lat            = 4;
+  optional double lon            = 5;  
+  optional double majoraxis      = 6;
+  optional double minoraxis      = 7;   
+  optional double orientation    = 8;
+  optional string sigUUID        = 9;   
+  optional string classification = 10 [default = ""]; 
+  optional string msgID          = 11 [default = ""];  
+}
+
+
+////
+// Message from CS to TG to start or stop a GEO track 
+// 
+// msgName: GEO_REQUEST, used to identify the message
+// reqAction: Whether stopping, starting, or querying active 
+//            geo-tracks.  A query should provide the geoID's
+//            for current active tracks
+// det: Detection Information for the target signal for the geo-track request
+// sat: Satinfo object
+// lat: SOI latitude in deg. if available prior to request
+// lon: SOI longitude in deg. if available prior to request
+// alt: SOI altitude in m if available prior to request
+// locTime: Time of the produced locational information
+//                  (YYYY:MM:DD::HH:MM:SS.SSSSSS)
+// priority: prioritization of this geo request ranked from 0 to 100
+//                  where 0 is low and 100 is high
+//                  A higher priority request should free required resources 
+//                  from a lower priority request for the purpose of
+//                  establishing a geo-track
+// classification: classification of message
+message GeoRequest
+{
+  enum Action {
+    STOP = 0;
+    START = 1;
+    QUERY = 2;
+    UPDATE = 3;
+  }
+  optional string    msgName        = 1 [default = "GEO_REQUEST"];
+  optional Action    reqAction      = 2 [default = STOP]; 
+  optional Detection det            = 3 ;
+  optional SatInfo   sat            = 4 ;
+  optional double    lat            = 5 [default = 1000] ;
+  optional double    lon            = 6 [default = 1000] ;
+  optional double    alt            = 7 [default = -1] ;
+  optional string    locTime        = 8 ;
+  optional int32     priority       = 9 [default = 0] ;
+  optional string    classification = 10 [default = ""] ;
+}
+
+
+////
+// Message from TG to CS to acknowledge the success of 
+// initiating a geo-track or stopping a geo-track in order for
+// CS to maintain an accurate knowledge of active geo tracks 
+// 
+// msgName: GEO_RESPONSE, used to identify the message
+// outcome: Identifies whether the requested action has been successful
+//          or if this message is in response to a query
+// sigUUID: UUID which has been assigned to the detection 
+//          by CS system in detection message 
+// classification: classification of message
+message GeoResponse
+{
+  enum Status {
+    FAILURE = 0;
+    SUCCESS = 1;
+    QUERY = 2;
+    TRACKDOWN = 3;
+  }
+  optional string msgName        = 1 [default = "GEO_RESPONSE"];
+  optional Status outcome        = 2 ;  
+  repeated string sigUUID        = 3 ;
+  optional string classification = 4 [default = ""] ;
+} 
+
+
+////
+// Geo-location information sent from TG to CS regarding location
+// updates for active geo-tracks
+// 
+// msgName: GEO_POINT, used to identify the message
+// lat: SOI latitude deg.
+// lon: SOI longitude deg.
+// majoraxis: Distance of geo error ellipse's major axis in m
+// minoraxis: Distance of geo error ellipse's minor axis in m
+// orientation: Azimuthal orientation of geo error ellipse in degrees
+// altitude: estimated altitude of platform in MSL
+// altConf:  Confidence of altitude where 0 is low and 1000 is high
+// velocity: estimated velocity of platform in m/s
+// vConf: Confidence of velocity where 0 is low and 1000 is high
+// heading: estimated direction of travel in degrees
+// headConf: Confidence of heading where 0 is low and 1000 is high
+// covariance: covariance info
+// geoTime: (YYYY:MM:DD::HH:MM:SS.SSSSSS)
+// sigUUID: unique identifier for each detected signal
+//          if available for requested signal, the signal UUID
+//          will be provided to track the request
+// classification: classification of message
+message GeoPoint
+{
+  optional string msgName        = 1 [default = "GEO_POINT"];
+  optional double lat            = 2 ;
+  optional double lon            = 3 ;  
+  optional double majoraxis      = 4 ;
+  optional double minoraxis      = 5 ;   
+  optional double orientation    = 6 ;
+  optional double altitude       = 7 ;
+  optional int32  altConf        = 8 ;
+  optional double velocity       = 9 ;
+  optional int32  vConf          = 10 ;
+  optional double heading        = 11 ; 
+  optional int32  headConf       = 12 ;
+  optional string covariance     = 13 ;
+  optional string sigUUID        = 14 ;
+  optional string geoTime        = 15 ;
+  optional string classification = 16 [default = ""] ;
+}
+
+////
+// Message to puch active signal list from CS to TG at the
+// completion of a signal survey on a given feed
+//
+// msgName: ACTIVE_LIST, used to identify the message
+// satinfo: satellite name and polarization abbreviation in format 
+//          SATNAME_POL where pol is V,H,RHCP,or LHCP
+// msgID: Unique ID associated to this active signal list push
+// classification: classification of message
+// det: Detection object will be repeated for each active signal 
+//      on this feed
+message ActiveList
+{
+  optional string    msgName        = 1 [default = "ACTIVE_LIST"];
+  optional SatInfo   sat            = 2 ;
+  optional string    msgID          = 3 [default = ""];  
+  optional string    classification = 4 [default = ""] ;
+  repeated Detection det            = 5 ;
+}
+
+////
+// Initiate an external geo 
+//
+// msgName: INITIATE_GEO, used to identify the message
+// sigUUID: unique identifier for each detected signal
+//          if available for requested signal, the signal UUID
+//          will be provided to track the request
+// priority: prioritization of this geo request ranked from 0 to 100
+//                  where 0 is low and 100 is high
+//                  A higher priority request should free required resources 
+//                  from a lower priority request for the purpose of
+//                  establishing a geo-track
+// geoDuration: Duration of the geo-track conducted in seconds
+message InitiateGeo
+{
+
+  optional string    msgName        = 1 [default = "INITIATE_GEO"];
+  optional string    sigUUID        = 2 ; 
+  optional int32     priority       = 3 [default = 0] ;   
+  optional double    duration       = 4 [default = 300];
+  optional bool      force          = 5 [default = false];
+
+}
+
+////
+// Get signal status for testing purposes
+//
+//msgName: SIGNAL_STATUS
+// sigUUID: unique identifier for each detected signal
+//          if available for requested signal, the signal UUID
+//          will be provided to track the request
+message SignalStatus
+{
+  optional string msgName           = 1 [default = "SIGNAL_STATUS"];
+  optional string sigUUID           = 2 ;   
+  optional string sigType           = 3 ;
+  optional bool   proc              = 4 ;
+  optional string geoStatus         = 5 ;
+  optional bool   telemAvail        = 6 ;
+  optional string telemLastTime     = 7 ;
+  optional int64  geoPri            = 8 ;
+  optional string eventID           = 9 ;
+  optional string sigName           = 10 ;
+}
+
+////
+// Sig Stat Request 
+//
+// msgName: STAT_REQ, used to identify the message
+// sigUUID: unique identifier for each detected signal
+//          if available for requested signal, the signal UUID
+//          will be provided to track the request
+message StatusRequest
+{
+  optional string    msgName        = 1 [default = "STAT_REQ"];
+  optional string    sigUUID        = 2 ;   
+}

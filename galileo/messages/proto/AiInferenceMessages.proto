@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+package ai_inference_msg;
+
+message SpectrogramInferenceResult
+{
+   optional string msgName = 1 [default = "SPECTROGRAM_INFERENCE_RESULT"];
+   // UUID of the I/Q for the Spectrogram
+   optional string ramSnapId = 2;
+   // Name of the spectrogram file
+   optional string spectrogramFile = 3;
+   // Center Frequency of the Snapshot
+   optional double centerFrequencyHz = 4;
+   // List of labels
+   repeated string labels = 5;
+   // List of scores for the corresponding labels
+   repeated double scores = 6;
+   // Score Threshold
+   optional double scoreThreshold = 7;
+};
+
+

@@ -1,0 +1,274 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed.
+option java_package = "fv.protos.kepsvisor";
+
+/* Messages exclusive to either Service or the Infrastructure */
+
+package service_infrastructure;
+
+import "FalconRemotingMessages.proto"; // contains SignalEvent
+import "TunerMessages.proto"; // contains DwellScan, QueryReceiverStatus, ReceiverStatus SnapInfo
+import "ThunderbirdMessages.proto"; // contains EWCommandRequest, EWCeaseBuzzer, Parameter
+import "FalconCommonMessages.proto"; // messages for Geo Messages
+import "ServiceInfrastructureCommon.proto"; // messages common to Service and the Infrastructure
+import "Products.proto"; // contains Product
+import "VideoCompressionMessages.proto";
+import "RADARmessages.proto";
+import "DebugMessages.proto";
+import "SigFrameMessages.proto";
+import "RxCommandMessages.proto"; //contains RxCommandRequest, RxCommandResponse
+import "FalconAntennaMessages.proto"; //contains SwitchStatus
+import "ESProductMessages.proto"; //contains ESObservablesRegister, ESObservablesUnregister, ESObservables
+import "AutoKillMessages.proto";
+//////// KEPLER
+
+message ServiceEnvelope
+{
+    optional Header header = 1;
+
+    // request & response
+    optional HandshakeTopic handshake = 2;
+
+    // response only
+    optional EWResponseTopic ew_response = 3;
+    optional ProductResponseTopic product_response = 5;
+
+    // request only
+    optional RadioControlRequestTopic radio_control_request = 6;
+
+    // neither request nor response (report state)
+    optional SignalEventTopic signal_event = 7;
+}
+
+
+////// TOPICS
+
+// response only
+
+message EWResponseTopic
+{
+    optional Header header = 100;
+    optional NAck nack = 1;
+    optional Ack ack = 2;
+    optional fv.tb.protos.TBProtos.EWStatus ew_status = 3;
+    optional fv.tb.protos.TBProtos.EWOptions ew_options = 4;
+    optional fv.tb.protos.TBProtos.EWOptionDelete ew_option_delete = 5;
+    optional fv.tb.protos.TBProtos.RegisterResponse register_response = 6;
+    optional fv.tb.protos.TBProtos.newSignalFrame new_signal_frame = 7;
+    optional fv.tb.protos.TBProtos.EWCapabilities ew_capabilities = 8;
+    optional fv.tb.protos.TBProtos.EWTransmitting ew_transmitting = 9;
+    optional fv.tb.protos.TBProtos.EWTechniqueDescriptions ew_technique_descriptions = 10;
+}
+
+message CapabilityResponseTopic
+{
+    optional Header header = 100;
+    optional NAck nack = 1;
+    optional Ack ack = 2;
+    optional fv.tb.protos.TBProtos.EWCapability ew_capability = 10;
+    optional fv.tb.protos.TBProtos.EWCapabilityUnregister ew_capability_unregister = 11;
+    optional fv.tb.protos.TBProtos.HopAttackStatus hop_attack_status = 12;
+    optional fv.tb.protos.TBProtos.EWCapabilityTransmitting ew_capability_transmitting = 13;
+}
+
+// request only
+
+message RadioControlRequestTopic
+{
+    optional Header header = 100;
+    optional tuner_msg.DwellScan dwell_scan = 1;
+    optional tuner_msg.QueryReceiverStatus rx_query = 2;
+    optional tuner_msg.ReceiverRequest receiver_request = 3;
+    optional tuner_msg.ReceiverRelease receiver_release = 4;
+    optional rx_command_msg.RxCommandRequest rx_command_request = 5;
+}
+
+// neither request nor response
+
+message SignalEventTopic
+{
+    optional Header header = 100;
+    optional falcon_remoting_msg.SignalEvent signal_event = 1;
+    optional falcon_remoting_msg.GPSPosition gps_position = 2;
+}
+
+
+message ProductResponseTopic
+{
+    optional Header header = 100;
+    optional video_compression_msg.ImageAvailable image_available = 1;
+    optional products.FisD fisd = 2;
+    optional VideoParameters video_parameters = 3;
+    optional products.AudioAvailable audioavailable = 4;
+}
+
+message VideoParameters {
+    optional string eltex = 1;
+    optional int32 instance = 2;
+    optional string protocol = 3;
+    optional string ipaddress = 4;
+    optional int32 port = 5;
+    optional string globalID = 6;
+}
+
+message ESProductTopic
+{
+    optional Header header = 100;
+
+    optional es_product_msg.ESObservablesRegister es_observables_register = 1;
+    optional es_product_msg.ESObservablesUnregister es_observables_unregister = 2;
+    optional es_product_msg.ESObservables es_observables = 3;
+    optional auto_kill_msg.StateResponse state_response = 4;
+    optional auto_kill_msg.OverrideState override_state = 5;
+    optional auto_kill_msg.AutoKillGUI autokill_gui = 6; 
+}
+
+//// PAYLOADS
+
+//////// INFRASTRUCTURE
+
+message InfrastructureEnvelope
+{
+    optional Header header = 1;
+
+    // request & response
+    optional HandshakeTopic handshake = 2;
+
+    // request only
+    optional EWRequestTopic ew_request = 3;
+    optional ProductRequestTopic product_request = 5;
+
+    // response only
+    optional RadioControlResponseTopic radio_control_response = 6;
+
+    // neither request nor response (report state)
+    optional RadioDataTopic radio_data = 7;
+    
+    optional DebugTopic debug_topic = 8;
+}
+
+
+////// TOPICS
+
+// request only
+message ProductRequestTopic
+{
+    optional Header header = 100;
+    optional products.FisDRequest fisd = 1;
+    optional ImageRequest image = 2;
+    optional VideoRequest video = 3;
+    optional products.AudioRequest audio = 4;
+}
+
+message EWRequestTopic
+{
+    optional Header header = 100;
+    optional fv.tb.protos.TBProtos.EWCommandRequest ew_command_request = 1;
+    optional fv.tb.protos.TBProtos.EWCeaseBuzzer ew_cease_buzzer = 2;
+    optional fv.tb.protos.TBProtos.EWStatusRequest ew_status_request = 4;
+    optional fv.tb.protos.TBProtos.EWOptionsRequest ew_options_request = 5;
+    optional fv.tb.protos.TBProtos.RegisterRequest register_request = 6;
+    optional fv.tb.protos.TBProtos.RegisterQuery register_query = 7;
+    optional fv.tb.protos.TBProtos.EmergencyJam emergency_jam = 8;
+    optional fv.tb.protos.TBProtos.TxFreqRequest tx_freq_request = 9;
+    optional fv.tb.protos.TBProtos.EWCapabilitiesRequest ew_capabilities_request = 10;
+    optional fv.tb.protos.TBProtos.EWTransmittingRequest ew_transmitting_request = 11;
+    optional fv.tb.protos.TBProtos.CloseSelf close_self = 12;
+    optional fv.tb.protos.TBProtos.UnregisterRequest unregister_request = 13;
+    optional fv.tb.protos.TBProtos.EWTechniqueDescriptionsRequest ew_technique_descriptions_request = 14;
+}
+
+message CapabilityRequestTopic
+{
+    optional Header header = 100;
+    optional fv.tb.protos.TBProtos.JamOff jam_off = 10;
+    optional fv.tb.protos.TBProtos.techniqueCommand technique_command = 11;
+}
+
+message TransmitterControlRequestTopic
+{
+    optional Header header = 100;
+    optional tuner_msg.TxTune txTune = 7;
+    optional tuner_msg.ReactiveJam reactiveJam = 10;
+}
+
+// response only
+
+message RadioControlResponseTopic
+{
+    optional Header header = 100;
+    optional Ack ack = 1;
+    optional NAck nack = 2;
+    optional tuner_msg.ReceiverStatus rx_status = 3;
+    optional tuner_msg.ReceiverAcquired receiver_acquired = 4;
+    optional tuner_msg.ReceiverReleased receiver_released = 5;
+    optional rx_command_msg.RxCommandResponse rx_command_response = 6;
+}
+
+//add debug topic
+message DebugTopic
+{
+    optional Header header = 100;
+    optional falcon_debug_msg.Info info = 1;
+    optional falcon_debug_msg.Info hostname = 10;
+    optional falcon_debug_msg.Warning warning = 2;
+    optional falcon_debug_msg.Error error = 3;
+}
+
+
+
+//add sigframes topic
+message SigFramesTopic
+{
+    optional Header header = 100;
+    optional fv.sf.protos.SFProtos.SIGFrame sigframe = 1;
+}
+
+
+// neither request nor response (report state)
+message RadioDataTopic
+{
+    optional Header header = 100;
+    optional tuner_msg.SnapInfo snap_info = 1;
+}
+
+message GeoTopic
+{
+    optional Header header = 100;
+    optional falcon_common_msg.GeoTip geo_tip = 1;
+    optional falcon_common_msg.GeoResult geo_result = 2;
+    optional falcon_common_msg.DetectionTip detection_tip = 3;
+}
+
+message SensorTopic
+{
+    optional Header header = 100;
+    optional falcon_remoting_msg.HardwareStatus hardware_status = 1;
+    optional falcon_remoting_msg.SensorPosition sensor_position = 2;
+    optional falcon_antenna_msg.SwitchStatus switch_status = 3;
+    optional falcon_remoting_msg.SensorStatus sensor_status = 4;
+}
+
+//// PAYLOADS
+
+
+message ImageRequest
+{
+    optional Header header = 100;
+    optional string eltex = 1;
+    optional string connection_id = 2;
+}
+
+/*
+// When the EW Processor is pulling out video, the caller can request
+// which port the video is being sent across
+// eltex                The signal designator being requested
+// connection_id        If there are multiple videos of the same eltex, which one is being requested
+*/
+message VideoRequest
+{
+    optional Header header = 100;
+    optional string eltex = 1;
+    optional string connection_id = 2;
+}

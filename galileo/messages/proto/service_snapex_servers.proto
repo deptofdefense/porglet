@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package service_snapex_servers;
+
+message SESConfigMess
+{
+  optional string msgName   = 1 [default = "SESCONFIGMESS"];
+  optional string snapex    = 2 [default = "/apps/m2extra/ext/src/snapextra/python/snap_extra.py"];
+  optional string script    = 3 [default = "/user/config/snap_extra/snap_extra_ht.cfg"]; 
+}

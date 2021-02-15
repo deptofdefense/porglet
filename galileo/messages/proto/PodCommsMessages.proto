@@ -1,0 +1,108 @@
+// This protocol specification was developed with US Government
+// funding and is licensed to the Government with Unlimited Rights.
+
+syntax = "proto2";
+
+package fv.podcomms.protos.PodCommsProtos;
+
+// When compiling specify the --proto_path option to the root of the project
+
+option java_package = "fv.podcomms.protos";
+option java_outer_classname = "PodCommsProtos";
+
+////////////////////////////////////////////////////////////////
+// PODCOMMS MESSAGES
+////////////////////////////////////////////////////////////////
+
+import "ThunderbirdMessages.proto"; // contains EWCommandRequest, EWCeaseBuzzer, Parameter
+import "ServiceInfrastructureCommon.proto"; // messages common to Service and the Infrastructure
+import "ServiceInfrastructureExclusive.proto"; // messages common to Service and the Infrastructure
+import "BitMessages.proto"; // contains BIT messages
+import "DebugMessages.proto";
+
+message NetworkLayout
+{
+    // Front-end ZMQ Proxy Ports (used by PodComms)
+    // Base  port for the network; other ports are relative to this
+    optional int64 base_port = 1 [default = 8070];
+
+    // PodComms publishes to this port offset
+    optional int64 infrastructure_port_offset = 2 [default = 17];
+
+    // Kepler publishers to this port offset
+    optional int64 service_port_offset = 3 [default = 19];
+
+    // PodComms publishes to this port offset
+    optional int64 air_port_offset = 4 [default = 21];
+
+    // Kepler publishers to this port offset
+    optional int64 ground_port_offset = 5 [default = 23];
+
+
+    // Back-end ZMQ Proxy Ports (used by Kepler)
+    optional int64 sub_port = 6 [default = 8186];
+    optional int64 pub_port = 7 [default = 8185];
+    optional int64 air_port = 8 [default = 8184];
+    optional int64 ground_port = 9 [default = 8183];
+}
+
+message KeplerGroundToAirEnvelope
+{
+
+    optional service_infrastructure.Header header = 1;
+
+    // Defined in ServiceInfrastructureCommon
+    optional service_infrastructure.HandshakeTopic handshake = 4;
+
+    // Defined in ServiceInfrastructureExclusive
+    optional service_infrastructure.EWRequestTopic ew_request = 5;
+    optional service_infrastructure.ProductRequestTopic product_request = 6;
+   
+    // Defined in BitMessages.proto
+    optional bit_protos.BitRequestTopic bit_test_request = 8;
+    
+
+}
+
+message KeplerAirToGroundEnvelope
+{
+
+    optional service_infrastructure.Header header = 1;
+
+    // Defined in ServiceInfrastructureCommon
+    optional service_infrastructure.HandshakeTopic handshake = 4;
+    
+    // Defined in ServiceInfrastructureExclusive
+    optional service_infrastructure.EWResponseTopic ew_response = 6;
+    optional service_infrastructure.ProductResponseTopic product_response = 7;
+
+    // Defined in BitMessages.proto
+    optional bit_protos.BitResponseTopic bit_test_response = 9;
+    optional service_infrastructure.DebugTopic debug_topic = 10;
+    optional service_infrastructure.SensorTopic sensor_topic = 11;
+
+}
+
+message KeplerBiDirectionalEnvelope
+{
+    optional service_infrastructure.Header header = 1;
+    optional service_infrastructure.SignalEventTopic signal_event = 8;
+    optional service_infrastructure.SigFramesTopic sigframes_topic = 12;
+
+}
+
+
+
+////////////////////////////////////////////////////////////////
+// Handshaking Messages
+////////////////////////////////////////////////////////////////
+
+
+// Version Message
+message PodCommsICDVersion {
+    optional int32  major  = 1 [default = 0];
+    optional int32  minor  = 2 [default = 0];
+    optional int32  patch  = 3 [default = 2];
+    optional string date   = 4 [default = '2020-05-22'];
+    optional string commit = 5;
+}

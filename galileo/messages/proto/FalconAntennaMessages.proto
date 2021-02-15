@@ -1,0 +1,383 @@
+syntax = "proto2";
+
+// This is the package where the java source code will be placed. 
+option java_package = "fv.protos.kepsvisor";
+
+////
+// Messages used in the falcon package to control and communicate with antenna,
+// rotor and RF switch resources.
+//
+// In every message, always add the first parameter as:
+//    optional string msgName = 1 [default = "MSG_NAME"];
+//
+// Package used in c and java; python ignores
+package falcon_antenna_msg;
+
+////
+// Request a rotor to move to the specified azimuth and elevation.  This 
+// message is ignored if the app is not a controller, but it will return a 
+// RotorPosition message regardless of success or failure.
+//
+// msgName: ROTOR_STEP, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// azimuth: Destination azimuth position, negative values are ignored
+// elevation: Destination elevation position, negative values are ignored
+//            work around for specifying negative elevation: add 360
+//            e.g., if want -1 elevation, set 'elevation' to -1+360 = 359
+//            for -2, set to 358, etc.
+//            receiver of RotorStep is responsible for converting back to 
+//            desired value for use (i.e., subtracting 360), meaning assoc
+//            status messages (e.g., RotorPosition) will have the original
+//            negative value
+// velocity: Move at this velocity, negative values are ignored and 0 will
+//           use the rotor default
+// msgID: id of message from remoting. Should be 0 otherwise
+message RotorStep
+{
+  optional string msgName   = 1 [default = "ROTOR_STEP"];
+  optional string resID     = 2;
+  optional int32  appID     = 3;
+  optional float  azimuth   = 4 [default = -1];
+  optional float  elevation = 5 [default = -1];
+  optional float  velocity  = 6;
+  optional double msgID     = 7 [default = 0];
+}
+
+////
+// Request a rotor to move to the specified azimuth and elevation and then
+// slew to each of the specified azimuths with the given velocity.  This will
+// send a ROTOR_POSITION message every second while slewing, after the
+// first azimuth has been reached.
+//
+// msgName: ROTOR_SLEW, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// azimuth: List of azimuth positions
+// elevation: Destination elevation position, while not stated below
+//            negative values are ignored in the implementation
+//            work around for specifying negative elevation: add 360
+//            e.g., if want -1 elevation, set 'elevation' to -1+360 = 359
+//            for -2, set to 358, etc.
+//            receiver of RotorStep is responsible for converting back to 
+//            desired value for use (i.e., subtracting 360), meaning assoc
+//            status messages (e.g., RotorPosition) will have the original
+//            negative value
+// velocity: Speed at which to slew the antenna
+// retToStart: If true, return to the start azimuth
+message RotorSlew
+{
+  enum Type {
+      CONTINUOUS = 0;
+      ENERGY = 1;
+  }
+  optional string msgName    = 1 [default = "ROTOR_SLEW"];
+  optional string resID      = 2;
+  optional int32  appID      = 3;
+  repeated float  azimuth    = 4;
+  optional float  elevation  = 5;
+  optional float  velocity   = 6;
+  optional bool   retToStart = 7;
+  optional Type   slewType   = 8 [default = CONTINUOUS];
+}
+
+////
+// Point rotor to the specified position as long as it is within the range
+// of the rotor's step angles.  It should get the position from the attached
+// antenna.
+//
+// msgName: ROTOR_POINT, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// trackLat: Latitude of the target
+// trackLon: Longitude of the target
+// trackAlt: Altitude of the target
+// msgID: id of message from remoting. Should be 0 otherwise
+message RotorPoint
+{
+  optional string msgName  = 1 [default = "ROTOR_POINT"];
+  optional string resID    = 2;
+  optional int32  appID    = 3;
+  optional float  trackLat = 4;
+  optional float  trackLon = 5;
+  optional float  trackAlt = 6;
+  optional double msgID    = 7 [default = 0];
+}
+
+////
+// Request the rotor to stop what it is doing, cancelling the step or slew
+//
+// msgName: ROTOR_STOP, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+message RotorStop
+{
+  optional string msgName = 1 [default = "ROTOR_STOP"];
+  optional string resID   = 2;
+  optional int32  appID   = 3;
+}
+
+////
+// Request the current position of the rotor.  This will return the
+// RotorPosition message to the sender.
+//
+// msgName: QUERY_ROTOR_POSITION, used to identify the message
+// resID: Unique identifier of the resource
+// appID: Integer identifier of the requesting application
+message QueryRotorPosition
+{
+  optional string msgName = 1 [default = "QUERY_ROTOR_POSITION"];
+  optional string resID   = 2;
+  optional int32  appID   = 3;
+}
+
+////
+// Set the minimum and maximum angles for a rotor.  This will return a
+// RotorStatus message to show the change.  This message can also be sent to
+// FAST to modify its antenna scan range.  For FAST, the remote message for 
+// =ANLMPM will be sent to remoting.
+// 
+// msgName: MODIFY_ROTOR_SCAN_RANGE, used to identify the message
+// resID: Unique identifier of the resource
+// minScanAngle: Minimum scan angle, negative values are ignored
+// maxScanAngle: Maximum scan angle, negative values are ignored
+// msgID: id of message from remoting. Should be 0 otherwise
+message ModifyRotorScanRange
+{
+  optional string msgName      = 1 [default = "MODIFY_ROTOR_SCAN_RANGE"];
+  optional string resID        = 2;
+  optional float  minScanAngle = 3 [default = -1];
+  optional float  maxScanAngle = 4 [default = -1];
+  optional double msgID        = 5 [default = 0];
+}
+
+////
+// Turn on/off antenna tracking.  
+//
+// msgName: ANTENNA_TRACK, used to identify the message
+// appID: Unique identifier of the app
+// trackStatus: Status of the tracking
+// msgID: id of message from remoting. Should be 0 otherwise
+message AntennaTrack
+{
+    enum Status {
+        OFF = 0;
+        ON = 1;
+    }
+    optional string msgName     = 1 [default = "ANTENNA_TRACK"];
+    optional int32 appID        = 2;
+    optional Status trackStatus = 3 [default = OFF];
+    optional double msgID       = 4 [default = 0];
+}
+
+////
+// Start/Stop antenna scans.
+//
+// msgName: ANTENNA_SCAN, used to identify the message
+// resID: Unique identifier of the resource
+// appID: Unique identifier of the app
+// scanType: Type of scan to perform
+// scanStart: Start angle for the scan
+// scanEnd: End angle for the scan
+// scanVelocity: Speed at which the scan should run
+// msgID: id of the message from remoting. Should be 0 otherwise
+message AntennaScan
+{
+    enum ScanType {
+        OFF = 0;
+        CONTINUOUS = 1;
+        ENERGY = 2;
+        CONTINUOUS_STEP = 3;
+        ENERGY_STEP = 4;
+        DEFAULT = 5;
+    }
+    optional string msgName     = 1 [default = "ANTENNA_SCAN"];
+    optional string resID       = 2;
+    optional int32 appID        = 3;
+    optional ScanType scanType  = 4;
+    optional float scanStart    = 5;
+    optional float scanEnd      = 6;
+    optional float scanVelocity = 7;
+    optional double msgID       = 8 [default = 0];
+}
+
+////
+// Set the offset for a rotor.  This will return a RotorStatus message to show
+// the change.
+//
+// msgName: MODIFY_ROTOR_OFFSET, used to identify the message
+// resID: Unique identifier of the resource
+// azimuthOffset: Value to set the azimuth offset to
+// elevationOffset: Value to set the elevation offset to (if present)
+// msgID: id of message from remoting. Should be 0 otherwise
+message ModifyRotorOffset
+{
+    optional string msgName         = 1 [default = "MODIFY_ROTOR_OFFSET"];
+    optional string resID           = 2;
+    optional float azimuthOffset    = 3 [default = 0];
+    optional float elevationOffset  = 4 [default = 0];
+    optional double msgID           = 5 [default = 0];
+}
+
+////
+// Send back the current position of the rotor.  This message is also sent to
+// the Remoting messaging group.
+//
+// msgName: ROTOR_POSITION, used to identify the message
+// resID: Unique identifier of the resource
+// status: Current status of the rotor (FAILED if step or slew unsuccessful)
+// time: Python time in seconds of the measurement (time.time())
+// azimuth: Current azimuth of the rotor
+// elevation: Current elevation of the rotor
+// velocity: Velocity when moving in degrees/sec
+// mode: Current status of the rotor controller
+// minScanAngle: Minimum scan angle
+// maxScanAngle: Maximum scan angle
+// azOffset: Azimuth offset in degrees
+// elOffset: Elevation offset in degrees
+message RotorPosition
+{
+  enum Status {
+    IDLE = 0;
+    MOVING = 1;
+    DONE = 2;
+    FAILED = 3;
+    CANCELLED = 4;
+    MOVING_SLEW = 5;
+  }
+  
+  optional string msgName       = 1 [default = "ROTOR_POSITION"];
+  optional string resID         = 2;
+  optional Status status        = 3 [default = IDLE];
+  optional float  time          = 4;
+  optional float  azimuth       = 5;
+  optional float  elevation     = 6;
+  optional float  velocity      = 7;
+}
+
+////
+// Send back the current status of the rotor.  This message is also sent to
+// the Remoting messaging group.
+//
+// msgName: ROTOR_STATUS, used to identify the message
+// resID: Unique identifier of the resource
+// mode: Current status of the rotor controller
+// minScanAngle: Minimum scan angle
+// maxScanAngle: Maximum scan angle
+// azOffset: Azimuth offset in degrees
+// elOffset: Elevation offset in degrees
+// elCtrl: Does the rotor have elevation control
+// velCtrl: Does the rotor have velocity control
+message RotorStatus
+{
+  enum Status {
+    NO_ROTOR = -1;
+    NO_CONNECTION = 0;
+    CONNECTED = 1;
+  }
+  enum CutoutStatus {
+    CUTOUT = 0;
+    NO_CUTOUT = 1;
+  }
+  
+  optional string msgName      = 1 [default = "ROTOR_STATUS"];
+  optional string resID        = 2;
+  optional Status status       = 3 [default = CONNECTED];
+  optional float  minScanAngle = 4;
+  optional float  maxScanAngle = 5;
+  optional float  azOffset     = 6;
+  optional float  elOffset     = 7;
+  optional bool  elCtrl        = 8 [default = false];
+  optional bool  velCtrl       = 9 [default = false];
+  optional CutoutStatus cutout = 10 [default = NO_CUTOUT];
+}
+
+////
+// Request a switch operation to map the specified input and output ports.  This 
+// message is ignored if the app is not a controller, but it will return a 
+// SwitchStatus message regardless of success or failure.
+//
+// msgName: SWITCH_MAP, used to identify the message
+// resID: Unique identifier of the resource to control
+// appID: Integer identifier of the requesting application
+// inputPort: Index of the input port (e.g. IN#)
+// outputPort: Index of the output port (e.g. OUT#)
+// msgID: id of message from remoting. Should be 0 otherwise
+message SwitchMap
+{
+  optional string msgName    = 1 [default = "SWITCH_MAP"];
+  optional string resID      = 2;
+  optional int32  appID      = 3;
+  optional int32  inputPort  = 4;
+  optional int32  outputPort = 5;
+  optional double msgID      = 6 [default = 0];
+}
+
+
+
+// msgName: SWITCH_MAP_INPUT_FAIL, used to identify the message
+// inputResID: Unique identifier of the input resource to control
+// map: SWITCH_MAP message that was unsuccessful due to not having control of input resource
+message SwitchMapInputFail
+{
+  optional string msgName       = 1 [default = "SWITCH_MAP_INPUT_FAIL"];
+  optional string inputPortID   = 2;
+  optional SwitchMap map        = 3;
+}
+
+
+////
+// Request the current positions of the switch ports.  This will return the
+// SwitchStatus message to the sender.
+//
+// msgName: QUERY_SWITCH_STATUS, used to identify the message
+// resID: Unique identifier of the resource
+// appID: Integer identifier of the requesting application
+message QuerySwitchStatus
+{
+  optional string msgName    = 1 [default = "QUERY_SWITCH_STATUS"];
+  optional string resID      = 2;
+  optional int32  appID      = 3;
+}
+
+////
+// Send back the current switch mapping.  This message is also sent to
+// the Remoting messaging group.
+//
+// msgName: SWITCH_STATUS, used to identify the message
+// resID: Unique identifier of the resource
+// outputPorts: List of IDs for the output ports
+// inputPorts: For each output port, list the connected input port.  A port
+//             of 0 is unmapped.
+// status: Current status of the switch controller
+// serialPort : name of the port switch is connected to.
+// state: generic field. For RFSwitches it is the switch name and position
+message SwitchStatus
+{
+  enum Status {
+    NO_CONNECTION = -2;
+    NO_RFSW = -1;
+    CONNECTED = 0;
+  };
+
+  enum Response {
+    FAILURE = -1;
+    SUCCESS = 0;
+  };
+  
+  optional string msgName     = 1 [default = "SWITCH_STATUS"];
+  optional string resID       = 2;
+  repeated int32  outputPorts = 3;
+  repeated int32  inputPorts  = 4;
+  optional Status status      = 5 [default = CONNECTED];
+  optional Response cmdStatus = 6;
+  optional string serialPort  = 7;
+  repeated string state       = 8; 
+}
+
+message SlaveAntWaitScan
+{
+  optional string msgName     = 1 [default = "SLAVE_ANT_WAIT_SCAN"];
+  optional bool   ScanState   = 2; 
+}
+
