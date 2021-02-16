@@ -30,12 +30,14 @@ class SweepViewer:
             pika.ConnectionParameters(host='localhost'))
             channel = connection.channel()
 
-            channel.exchange_declare(exchange='freqSweep', exchange_type='fanout')
+            #channel.exchange_declare(exchange='freqSweep', exchange_type='fanout')
+            channel.exchange_declare(exchange='pwrSweep', exchange_type='fanout')
 
             result = channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
 
-            channel.queue_bind(exchange='freqSweep', queue=queue_name)
+            # channel.queue_bind(exchange='freqSweep', queue=queue_name)
+            channel.queue_bind(exchange='pwrSweep', queue=queue_name)
             channel.basic_consume(queue=queue_name, on_message_callback=self.rabbitCallback, auto_ack=True)
             channel.start_consuming()
 
@@ -89,9 +91,11 @@ class SweepViewer:
             #print(str(np.shape(H)))
             
             #plt.imshow(Z, interpolation='none')
-            plt.show()
+            plt.draw()
+            plt.pause(1)
+            time.sleep(1)
+            plt.figure().clear()
 
-            time.sleep(5)
 
     def startViewer(self):
         self.rabbitThread = Thread(target=self.linkRabbit, daemon=True)
