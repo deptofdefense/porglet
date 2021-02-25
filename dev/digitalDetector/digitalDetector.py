@@ -107,6 +107,7 @@ class Detector:
                 #print(f"{str(freqSet[i])} : {str(precent)}")
                 digitalSignals.append(freqSet[i])
 
+        #print(f"Total targets: {str(len(digitalSignals))}\n\n")
         self.bundleDetections(digitalSignals)
 
     def bundleDetections(self, digitalSignals):
@@ -117,50 +118,46 @@ class Detector:
         """
         
         # lists of signal center freqs an bandwidths - this should probably become a custom object
-        centerFreq = []
-        bandwidth = []
+        bundleFreq = []
+        bandwidthList = []
 
         # helper varibles for calculating center freq
-        startFreq = 0
-        stopFreq = 0
+        startFreq = float(0)
+        stopFreq = float(0)
+        centerFreq = float(0)
 
         digitalSignals.sort() # order the list
 
-        for freq in digitalSignals:
-            if startFreq == 0: # start state
-                startFreq = freq
-            elif freq > startFreq and freq <= (startFreq + self.bandwidth): # freq is able to match with start freq
-                stopFreq = freq
-            else: # start new target bin
-                # add old target to the list
-                centerFreq.append(float(startFreq) + (float(stopFreq - startFreq) / 2))
-                bandwidth.append(float(stopFreq - startFreq) + 1)
+        if digitalSignals:
+            stopFreq = float(digitalSignals[0])
+            startFreq = float(digitalSignals[0])
+            centerFreq = float(digitalSignals[0])
 
-                #start new target
-                startFreq = freq
-
-        # at the end add the last unfinished target
-        centerFreq.append(float(startFreq) + (float(stopFreq - startFreq) / 2))
-        bandwidth.append(float(stopFreq - startFreq) + 1)
-
-
-        '''
         for i in range(len(digitalSignals)):
-            startFreq = digitalSignals[i]
+            #print(str(digitalSignals[i]))
 
-            # checks for signals within bandwidth and removes them
-            while (i+1) < len(digitalSignals) and ((digitalSignals[i+1] - startFreq) <= self.bandwidth):
-                stopFreq = digitalSignals[i+1]
-                i = i+1
-            
-            # updates the lists
-            centerFreq.append(float(startFreq) + (float(stopFreq - startFreq) / 2))
-            bandwidth.append(int(stopFreq - startFreq) + 1)
-        '''
-        for i in range(len(centerFreq)):
-            print(f"Freq: {str(centerFreq[i])} : {str(bandwidth[i])} MHz Bandwidth")
+            # if close enough to the last freq in the bundle, add it in
+            if (digitalSignals[i] - stopFreq) <= self.bandwidth:
+                stopFreq = float(digitalSignals[i])
+                centerFreq = startFreq + ((stopFreq - startFreq) / 2)
+            else: # new bundle
+                # add old bundle to list
+                bundleFreq.append(centerFreq)
+                bandwidthList.append((stopFreq - startFreq) + 1)
 
-        print(f"Total targets: {str(len(centerFreq))}")        
+                # start new bundle
+                startFreq = float(digitalSignals[i])
+                stopFreq = startFreq
+                centerFreq = startFreq
+        
+        # at the end add the last unfinished target
+        bundleFreq.append(centerFreq)
+        bandwidthList.append((stopFreq - startFreq) + 1)
+
+        for i in range(len(bundleFreq)):
+            print(f"Freq: {str(bundleFreq[i])} : {str(bandwidthList[i])} MHz Bandwidth")
+
+        print(f"Total targets: {str(len(bundleFreq))}\n")        
 
 
 
@@ -168,6 +165,6 @@ if __name__ == "__main__":
 
     print("Starting Digital Detector")
 
-    dsd = Detector(20, 1.0, 0.2, 50)
+    dsd = Detector(20, 0.8, 0.2, 10)
 
     dsd.linkRabbit()
