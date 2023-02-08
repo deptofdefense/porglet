@@ -3,6 +3,9 @@ import os # needed for file stuff
 import time # needed for sleep
 from threading import Thread # needed for threads
 
+from sklearn.cluster import KMeans # needed for clustering
+import numpy as np # needed for clustering
+
 import pika # needed for rabbitMQ
 
 class Detector:
@@ -75,7 +78,7 @@ class Detector:
         self.digitalDetect() # run the detector on the new window
 
     def digitalDetect(self):
-        """Method that contains the code to do digital detection, seperated for ease of use
+        """Method that contains the code to do digital detection, separated for ease of use
         """
 
         freqSet = set() # set that will contain every unique freq in the window
@@ -85,80 +88,17 @@ class Detector:
             for freq in run:
                 freqSet.add(freq)
 
-        #print(f"Set length: {str(len(freqSet))}")
+        print(f"Set length: {str(len(freqSet))}")
 
-        counterList = [0] * len(freqSet) # list of freq counter corresponding to the freqSet
+        # convert to numpy array
+        data = np.array(list(freqSet))
 
-        # convert set to a list for easier mapping
-        freqSet = list(freqSet)
+        # do KMeans clustering
+        kmeans = KMeans().fit(data.reshape(-1,1))
+        kmeans.predict(data.reshape(-1,1))
 
-        # count how often each freq occurs in the window
-        for i in range(len(self.freqList)):
-            for j in range(len(freqSet)):
-                counterList[j] = counterList[j] + self.freqList[i].count(freqSet[j])
-
-        digitalSignals = [] # list of validated digital signals
-
-        # check each of the counters and compare them to the precentages we gave for digital signal detection
-        for i in range(len(freqSet)):
-            precent = float(counterList[i] / self.windowSize)
-
-            if self.minPrecent <= precent and self.maxPrecent >= precent:
-                #print(f"{str(freqSet[i])} : {str(precent)}")
-                digitalSignals.append(freqSet[i])
-
-        #print(f"Total targets: {str(len(digitalSignals))}\n\n")
-        self.bundleDetections(digitalSignals)
-
-    def bundleDetections(self, digitalSignals):
-        """Bundles the digital signals based off of a given bandwidth
-
-        Args:
-            digitalSignals (List[(int)]): A list of the frequencies of detected digital signals
-        """
+        print(str(kmeans.labels_))
         
-        # lists of signal center freqs an bandwidths - this should probably become a custom object
-        bundleFreq = []
-        bandwidthList = []
-
-        # helper varibles for calculating center freq
-        startFreq = float(0)
-        stopFreq = float(0)
-        centerFreq = float(0)
-
-        digitalSignals.sort() # order the list
-
-        if digitalSignals:
-            stopFreq = float(digitalSignals[0])
-            startFreq = float(digitalSignals[0])
-            centerFreq = float(digitalSignals[0])
-
-        for i in range(len(digitalSignals)):
-            #print(str(digitalSignals[i]))
-
-            # if close enough to the last freq in the bundle, add it in
-            if (digitalSignals[i] - stopFreq) <= self.bandwidth:
-                stopFreq = float(digitalSignals[i])
-                centerFreq = startFreq + ((stopFreq - startFreq) / 2)
-            else: # new bundle
-                # add old bundle to list
-                bundleFreq.append(centerFreq)
-                bandwidthList.append((stopFreq - startFreq) + 1)
-
-                # start new bundle
-                startFreq = float(digitalSignals[i])
-                stopFreq = startFreq
-                centerFreq = startFreq
-        
-        # at the end add the last unfinished target
-        bundleFreq.append(centerFreq)
-        bandwidthList.append((stopFreq - startFreq) + 1)
-
-        for i in range(len(bundleFreq)):
-            print(f"Freq: {str(bundleFreq[i])} : {str(bandwidthList[i])} MHz Bandwidth")
-
-        print(f"Total targets: {str(len(bundleFreq))}\n")        
-
 
 
 if __name__ == "__main__":

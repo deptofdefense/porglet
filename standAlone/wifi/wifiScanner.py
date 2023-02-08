@@ -274,7 +274,8 @@ if __name__ == "__main__":
     check_root()
 
     # default interface
-    interface = "wlx9cefd5fd14f7"
+    #interface = "wlx9cefd5fd14f7"
+    interface = "wlx00c0cab08f8d"
 
     # looks for custom arguments
     if len(sys.argv) > 1 :

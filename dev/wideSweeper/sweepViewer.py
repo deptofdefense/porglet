@@ -20,7 +20,7 @@ class SweepViewer:
         self.dataList[0] = [0] * (self.maxFreq-self.minFreq)
 
     def linkRabbit(self):
-            """Setup and start lisenting for RabbitMQ messages
+            """Setup and start listening for RabbitMQ messages
             """
 
             print("Listening for RabbitMQ messages")

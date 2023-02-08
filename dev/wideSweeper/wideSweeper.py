@@ -69,7 +69,7 @@ class WideSweeper:
     def sweepFrequencies(self):
         ''' spawns the hackrf_sweep process and then acts on its output '''
 
-        self.bigSweep = subprocess.Popen(["hackrf_sweep", f"-f {self.minFreq}:{self.maxFreq}", f"-w {self.binSize}"], stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        self.bigSweep = subprocess.Popen(["hackrf_sweep", f"-a 1", f"-f {self.minFreq}:{self.maxFreq}", f"-w {self.binSize}"], stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         #self.bigSweep = subprocess.Popen(["hackrf_sweep", "-f 400:6000", "-w 1000000"], stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 
         startFreq = str(self.minFreq) + "000000" # minFreq is in MHz, but output is in Hz
@@ -184,7 +184,7 @@ class WideSweeper:
                         tempDBmPwr.append(float(splitStr[10]))                 
                 
             else:
-                print("Something went wrong with spliting bigSweep response")
+                print("Something went wrong with splitting bigSweep response")
                 self.bigSweep.kill()
                 self.connection.close()
                 sys.exit()
@@ -203,6 +203,6 @@ class WideSweeper:
 
 if __name__ == "__main__":
 
-    sweeper = WideSweeper(400, 6000, 1000000, 0, 5)
+    sweeper = WideSweeper(1, 6000, 100000, 0, 5)
 
     sweeper.startSweeper()
