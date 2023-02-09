@@ -5,6 +5,8 @@ from threading import Thread # needed for threads
 
 from sklearn.cluster import KMeans # needed for clustering
 import numpy as np # needed for clustering
+from sklearn.neighbors import NearestNeighbors # needed for helping find epsilon
+from kneed import KneeLocator # needed for helping to find epsilon
 
 import pika # needed for rabbitMQ
 
@@ -88,16 +90,41 @@ class Detector:
             for freq in run:
                 freqSet.add(freq)
 
-        print(f"Set length: {str(len(freqSet))}")
+        #print(f"Set length: {str(len(freqSet))}")
 
-        # convert to numpy array
-        data = np.array(list(freqSet))
+        if len(freqSet) != 0: # set is not empty
 
-        # do KMeans clustering
-        kmeans = KMeans().fit(data.reshape(-1,1))
-        kmeans.predict(data.reshape(-1,1))
+            # convert to numpy array
+            data = np.array(list(freqSet))
 
-        print(str(kmeans.labels_))
+            # gets distance from all neighbours
+            neighbors = NearestNeighbors(n_neighbors=11).fit(data.reshape(-1,1))
+            distances, indices = neighbors.kneighbors(data.reshape(-1,1))
+            distances = np.sort(distances[:,10], axis=0)
+
+            # find knee point
+            knee = KneeLocator(np.arange(len(distances)), distances, S=1, curve='convex', direction='increasing', interp_method='polynomial')
+            
+            #print(f"Knee Point: {str(distances[knee.knee])}")
+
+            # do KMeans clustering
+            if len(freqSet) > int(distances[knee.knee]):
+                kmeans = KMeans(n_clusters=int(distances[knee.knee]), n_init='auto').fit(data.reshape(-1,1))
+                kmeans.predict(data.reshape(-1,1))
+            else:
+                kmeans = KMeans(n_clusters=int(len(freqSet)), n_init='auto').fit(data.reshape(-1,1))
+                kmeans.predict(data.reshape(-1,1))
+
+            #print(str(kmeans.labels_))
+
+            # Pair frequencies with clusters 
+            freqList = []
+
+            #for i in
+
+        
+        else: # empty set, meaning sweeper not started, do nothing
+            print("Empty set, no processing")
         
 
 
@@ -105,6 +132,6 @@ if __name__ == "__main__":
 
     print("Starting Digital Detector")
 
-    dsd = Detector(20, 0.8, 0.2, 10)
+    dsd = Detector(60, 0.8, 0.2, 10)
 
     dsd.linkRabbit()
